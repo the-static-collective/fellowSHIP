@@ -1,8 +1,8 @@
 # Commons 001 — Two-account acceptance and security test plan
 
-**Environment:** a fresh, disposable Supabase project with `db/schema.sql` installed. Never test authorization bypasses against real church or pastoral records.
+**Environment:** the isolated Neon project `fellowSHIP Commons` with `db/neon-schema.sql` installed. Never test authorization bypasses against real church or pastoral records.
 
-**Accounts:** A = church A founder, B = collaborator, C = unrelated user. All sign in independently with email magic links.
+**Accounts:** A = church A founder, B = collaborator, C = unrelated user. All sign in independently with Neon Auth email/password.
 
 ## Functional acceptance
 
@@ -28,18 +28,18 @@
 - **Unauthorized room creation:** as B, attempt to create a room in A's community. Expect denial.
 - **Wrong member ID:** the invite should fail if an Auth user with that ID does not exist. No fake account should be silently created.
 - **Revocation:** as A, remove B's `room_members` grant. After refresh, B can no longer read tasks or events. The revoked user must not be able to write either.
-- **Secrets:** inspect browser source, localStorage, and network calls. No `service_role`, `sb_secret_` key, or R2/Suno credential may appear.
+- **Secrets:** inspect browser source, localStorage, and network calls. No privileged Postgres password, Neon secret key, R2/Suno credential, or server token may appear.
 - **Email redirect:** test an authenticated click-through at both localhost and the intended HTTPS site URL.
 
 ## SQL review
 
-Confirm through the Supabase dashboard or SQL editor:
+Confirm through the Neon SQL API or Neon console:
 - Every Commons table has `relrowsecurity=true`.
 - `anon` has no table grants; `authenticated` has only the grants enumerated at the end of `db/schema.sql`.
 - `private` is not in the project's exposed API schemas.
 - The `activity` trigger produces a row only when a task is created or material task fields change.
-- Supabase security advisors show no unresolved issue introduced by this schema.
+- Neon Data API security advisor and role grants show no unresolved RLS or privilege issue.
 
 ## Not tested by a repository-only commit
 
-This plan requires a **provisioned project** and actual human account sessions. Static source review cannot prove live RLS, email delivery, CDN availability, browser/device compatibility, or a federated broadcast. Do not label any of these verified until the relevant test has run.
+The Neon project is provisioned, but this plan still requires actual independent authenticated sessions. Static source review and owner-role SQL cannot prove live session-bound RLS, email delivery, CDN availability, browser/device compatibility, or a federated broadcast. Do not label any of these verified until the relevant test has run.
