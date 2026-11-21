@@ -12,6 +12,30 @@ let communities = [];
 let rooms = [];
 let currentRoom = null;
 let roomRequest = 0;
+let pendingInvite = null;
+
+function restoreInviteFromLink() {
+  const fromFragment = /^#invite=([0-9a-f]{64})$/.exec(window.location.hash);
+  if (fromFragment) {
+    sessionStorage.setItem("fellowship.pendingRoomInvite", fromFragment[1]);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
+  pendingInvite = sessionStorage.getItem("fellowship.pendingRoomInvite") || null;
+}
+function setPendingInvite(token) {
+  pendingInvite = token || null;
+  if (pendingInvite) sessionStorage.setItem("fellowship.pendingRoomInvite", pendingInvite);
+  else sessionStorage.removeItem("fellowship.pendingRoomInvite");
+  displayInvitation();
+}
+function displayInvitation() {
+  $("pending-invite-panel").hidden = !pendingInvite;
+  $("accept-room-invite").disabled = !pendingInvite || !user || !db;
+  $("pending-invite-message").textContent = user
+    ? "You are signed in. Accept to join the invited project room."
+    : "Sign in or create an account, then accept this private invitation.";
+}
+
 
 function notice(message, isError = false) {
   $("status").textContent = message;
@@ -61,6 +85,7 @@ function displaySession() {
   $("auth-panel").hidden = Boolean(user);
   $("workspace").hidden = !user;
   if (user) $("member-id").textContent = user.id;
+  displayInvitation();
 }
 
 async function refreshWorkspace() {
@@ -135,15 +160,17 @@ async function loadRoom() {
   const room = rooms.find((r) => r.id === currentRoom);
   if (!room) return clearRoom();
   const request = ++roomRequest;
-  const [taskResponse, memberResponse, activityResponse] = await Promise.all([
+  const [taskResponse, memberResponse, activityResponse, checkinResponse, invitesResponse] = await Promise.all([
     db.from("tasks").select("id,title,details,status,created_by,created_at,updated_at")
       .eq("room_id", room.id).order("created_at", { ascending: false }),
     db.from("room_members").select("user_id,role,added_at").eq("room_id", room.id),
     db.from("activity").select("id,actor_id,action,details,occurred_at")
-      .eq("room_id", room.id).order("occurred_at", { ascending: false }).limit(40)
+      .eq("room_id", room.id).order("occurred_at", { ascending: false }).limit(40),
+    db.from("room_checkins").select("seen_at").eq("room_id", room.id).eq("user_id", user.id).maybeSingle(),
+    owns(room) ? db.rpc("list_room_invites", { p_room: room.id }) : Promise.resolve({ data: [], error: null })
   ]);
   if (request !== roomRequest) return; // A faster room switch has superseded us.
-  for (const result of [taskResponse, memberResponse, activityResponse]) {
+  for (const result of [taskResponse, memberResponse, activityResponse, checkinResponse, invitesResponse]) {
     if (result.error) throw result.error;
   }
   const members = memberResponse.data || [];
@@ -155,10 +182,12 @@ async function loadRoom() {
   $("room-parent").textContent = communities.find((c) => c.id === room.community_id)?.name || "SHARED PROJECT";
   $("room-role").textContent = owns(room) ? "Owner" : editor ? "Editor" : "Viewer";
   $("task-form").hidden = !editor;
-  $("member-form").hidden = !owns(room);
+  $("invite-tools").hidden = !owns(room);
   drawTasks(taskResponse.data || [], editor);
   drawMembers(room, members);
   drawActivity(activityResponse.data || []);
+  drawCatchup(activityResponse.data || [], checkinResponse.data?.seen_at || null);
+  if (owns(room)) drawInvites(invitesResponse.data || []);
 }
 function drawTasks(tasks, editor) {
   const list = $("task-list");
@@ -237,6 +266,54 @@ function drawMembers(room, members) {
     list.append(li);
   }
 }
+function drawCatchup(events, lastSeen) {
+  const recent = lastSeen
+    ? events.filter((event) => new Date(event.occurred_at) > new Date(lastSeen))
+    : events;
+  const text = lastSeen
+    ? (recent.length ? recent.length + " recorded changes since " + dateText(lastSeen) : "No new task changes since your last check-in.")
+    : "First visit on this account: here are the most recent changes in this room.";
+  $("catchup-summary").textContent = text + (recent.length >= 40 ? " (Showing at most 40 recent events.)" : "");
+  const list = $("catchup-list");
+  list.replaceChildren();
+  for (const event of recent.slice(0, 8)) {
+    const actor = event.actor_id === user.id ? "You" : shortId(event.actor_id);
+    const verb = event.action === "task_created" ? "created" : "updated";
+    addText(list, "li", actor + " " + verb + " · " + (event.details?.title || "a task"));
+  }
+  $("mark-caught-up").disabled = Boolean(lastSeen && recent.length === 0);
+}
+
+function drawInvites(invites) {
+  const list = $("invite-list");
+  list.replaceChildren();
+  if (!invites.length) addText(list, "li", "No invitations created yet.", "muted");
+  for (const invite of invites) {
+    const li = document.createElement("li");
+    li.className = "invite-row";
+    const status = invite.redeemed_at ? "used" : invite.revoked_at ? "revoked"
+      : new Date(invite.expires_at) < new Date() ? "expired" : "open";
+    const description = invite.invite_role + " · " + (invite.recipient_email || "anyone with link");
+    addText(li, "span", description + " · " + status);
+    addText(li, "small", "Expires " + dateText(invite.expires_at), "muted");
+    if (status === "open") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "quiet";
+      button.textContent = "Revoke";
+      button.addEventListener("click", () => action(async () => {
+        const { data, error } = await db.rpc("revoke_room_invite", { p_invite: invite.invite_id });
+        if (error) throw error;
+        if (!data) throw new Error("Invitation was already redeemed, revoked or expired.");
+        await loadRoom();
+        notice("Invitation revoked");
+      }));
+      li.append(button);
+    }
+    list.append(li);
+  }
+}
+
 function drawActivity(events) {
   const list = $("activity-list");
   list.replaceChildren();
@@ -318,22 +395,52 @@ function bindForms() {
       notice("Task added");
     });
   });
-  $("member-form").addEventListener("submit", (e) => {
+  $("invite-form").addEventListener("submit", (e) => {
     e.preventDefault();
     action(async () => {
-      const collaborator = cleanInput("invite-user");
-      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(collaborator)) {
-        throw new Error("Ask the collaborator to copy their full member ID.");
-      }
-      const { error } = await db.from("room_members").insert({
-        room_id: currentRoom, user_id: collaborator, role: $("invite-role").value
+      if (!currentRoom) throw new Error("Choose a room first.");
+      const { data, error } = await db.rpc("issue_room_invite", {
+        p_room: currentRoom,
+        p_role: $("invite-role").value,
+        p_target_email: cleanInput("invite-email") || null
       });
       if (error) throw error;
-      $("invite-user").value = "";
+      if (!/^[0-9a-f]{64}$/.test(data || "")) throw new Error("The server did not return a valid invite.");
+      $("invite-link").value = window.location.origin + window.location.pathname + "#invite=" + data;
+      $("generated-invite").hidden = false;
       await loadRoom();
-      notice("Access granted to collaborator");
+      notice("Invitation created · copy and send privately");
     });
   });
+  $("copy-invite-link").addEventListener("click", () => action(async () => {
+    await navigator.clipboard.writeText($("invite-link").value);
+    notice("One-time invitation link copied");
+  }));
+  $("accept-room-invite").addEventListener("click", () => action(async () => {
+    if (!user || !pendingInvite) throw new Error("Sign in and open a valid invitation first.");
+    const { data, error } = await db.rpc("redeem_room_invite", { p_token: pendingInvite });
+    if (error) throw error;
+    if (!data) throw new Error("Could not join the room.");
+    setPendingInvite(null);
+    currentRoom = data;
+    await refreshWorkspace();
+    notice("Invitation accepted · welcome to your room");
+  }));
+  $("dismiss-room-invite").addEventListener("click", () => {
+    setPendingInvite(null);
+    notice("Invitation dismissed on this device");
+  });
+  $("mark-caught-up").addEventListener("click", () => action(async () => {
+    const room = currentRoom;
+    if (!room || !user) return;
+    const { error } = await db.from("room_checkins").upsert(
+      { room_id: room, user_id: user.id },
+      { onConflict: "room_id,user_id" }
+    );
+    if (error) throw error;
+    if (room === currentRoom) await loadRoom();
+    notice("Room check-in saved for your account");
+  }));
   $("refresh").addEventListener("click", () => action(refreshWorkspace));
   $("copy-id").addEventListener("click", () => action(async () => {
     await navigator.clipboard.writeText(user.id);
@@ -351,7 +458,9 @@ function bindForms() {
   }));
 }
 async function start() {
+  restoreInviteFromLink();
   bindForms();
+  displayInvitation();
   await action(connect);
 }
 void start();
