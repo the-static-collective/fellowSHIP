@@ -32,6 +32,7 @@ jobs:
           invites = Path('db/002_room_invites.sql').read_text().lower()
           checkins = Path('db/003_room_checkins.sql').read_text().lower()
           verified = Path('db/004_verified_invites.sql').read_text().lower()
+          room_rpc = Path('db/005_create_room_rpc.sql').read_text().lower()
           p = IDs()
           p.feed(html)
           assert len(p.ids) == len(set(p.ids)), 'Duplicate element ID'
@@ -48,6 +49,10 @@ jobs:
           assert 'private.room_can_read(room_id)' in checkins
           assert '"emailverified" is true' in verified
           assert 'auth.emailOtp.verifyEmail' in js
+          assert 'create function public.create_fellowship_room' in room_rpc
+          assert 'c.created_by = actor' in room_rpc
+          assert 'public.create_fellowship_room(uuid,text) to authenticated' in room_rpc
+          assert 'db.rpc("create_fellowship_room"' in js
           assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'
           assert 'neon_auth' in sql, 'Expected Neon identity schema'
           print(f'Checked {len(referenced)} JS element references and seven RLS tables.')
