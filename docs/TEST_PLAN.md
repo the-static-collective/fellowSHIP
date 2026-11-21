@@ -9,7 +9,7 @@
 1. A signs in, creates **Church A**, then creates a **Friday Supper** room.
 2. A creates a task "Confirm kitchen", changes it to **In progress**, and checks activity records actor/time.
 3. A selects **Create private invitation**, chooses **editor**, and optionally restricts the link to B's email. The raw link is shown once in the UI; the database stores only a SHA-256 digest.
-4. B opens the link from a separate device/browser. If signed out, B signs up or logs in, then explicitly selects **Accept invitation**.
+4. B opens the link from a separate device/browser. If signed out, B signs up or logs in, verifies their email with the Neon OTP code, then explicitly selects **Accept invitation**.
 5. B can read/edit tasks in Friday Supper and see the history, but not **Leadership Notes**, a room A creates separately without inviting B.
 6. A creates a second **viewer** link. C opens it and can read but cannot create/update tasks.
 7. B marks **Caught up**; when B opens the room from another browser under the same account, the saved check-in timestamp is reflected. New task events appear on the next refresh.
@@ -22,7 +22,7 @@
 - **No JWT:** the `anonymous` role must have zero table grants; test all four public invitation RPCs deny unauthenticated calls.
 - **Token replay:** redeem a single-use invitation twice, including concurrently. The second attempt must fail.
 - **Token confidentiality:** confirm `room_invites` stores only a 32-byte hash, never the raw token; browser URL fragment is cleared from the address bar after loading. Do not put invite links in public docs, logs or screenshots.
-- **Recipient binding:** an invitation restricted to B's email must fail when C attempts redemption.
+- **Recipient binding:** an invitation restricted to B's email must fail when C attempts redemption, even if C registers using B's address without validating it. Only Neon users with a verified matching mailbox may redeem a targeted invitation.
 - **Expiry and revocation:** expired and owner-revoked tokens cannot be redeemed. Revoke after redemption should not revoke membership; room-owner membership removal is a separate operation.
 - **Role scope:** viewer invitation grants no task writes. Editor invitation grants only tasks and not room-owner privileges.
 - **Room privacy:** external invitees can only read the one room they accepted; no sibling-room or private community records.
