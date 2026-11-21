@@ -49,6 +49,15 @@
           <button type="submit">Join fellowSHIP</button>
         </form>
       </div>
+      <section id="verify-email-panel" class="verify-panel" hidden>
+        <h3>Verify your email address</h3>
+        <p class="muted small">Enter the one-time code Neon sent to your mailbox. A targeted invitation cannot be redeemed until this address is verified.</p>
+        <form id="verify-email-form" class="stack">
+          <label>Email<input id="verify-email" type="email" autocomplete="email" required></label>
+          <label>Verification code<input id="verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Code from email" required></label>
+          <button class="primary" type="submit">Verify and continue</button>
+        </form>
+      </section>
       <p class="note">This pilot uses Neon's managed authentication. A church account does not grant access to confidential rooms; each invitation is explicit. Do not upload confidential pastoral, financial, or children's information during pilot testing.</p>
     </section>
 
