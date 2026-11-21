@@ -395,19 +395,38 @@ function bindForms() {
       await refreshWorkspace();
     });
   });
-  $("room-form").addEventListener("submit", (e) => {
+  $("room-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    action(async () => {
-      const { data, error } = await db.from("rooms").insert({
-        community_id: $("room-community").value,
-        name: cleanInput("room-name"),
-        created_by: user.id
-      }).select("id").single();
+    const button = $("create-room");
+    const feedback = $("room-feedback");
+    const p_community = $("room-community").value;
+    const p_name = cleanInput("room-name");
+    button.disabled = true;
+    feedback.hidden = false;
+    feedback.dataset.error = "false";
+    feedback.textContent = "Creating room…";
+    try {
+      if (!user || !p_community) throw new Error("Sign in and select a community first.");
+      // Only the signed-in community founder may create a room. The RPC
+      // checks ownership in PostgreSQL and generates the room ID server-side.
+      const { data, error } = await db.rpc("create_fellowship_room", {
+        p_community, p_name
+      });
       if (error) throw error;
-      currentRoom = data.id;
+      if (!data || typeof data !== "string") throw new Error("The server did not return a room ID.");
+      currentRoom = data;
       $("room-name").value = "";
       await refreshWorkspace();
-    });
+      feedback.textContent = "Room created successfully.";
+      notice("Room created · " + p_name);
+    } catch (error) {
+      console.error("Failed to create room", error);
+      feedback.dataset.error = "true";
+      feedback.textContent = "Room not created: " + errorMessage(error);
+      notice("Room not created. See the message below the Create room button.", true);
+    } finally {
+      button.disabled = false;
+    }
   });
   $("task-form").addEventListener("submit", (e) => {
     e.preventDefault();
