@@ -1,10 +1,11 @@
-/* fellowSHIP Commons 001 — a browser client, NOT an authorization boundary.
-   Every read/write is enforced by Supabase RLS in db/schema.sql.
-   No service key, administration credential, or server-side secret belongs here. */
+/* fellowSHIP Commons 001 — independent Neon backend.
+   RLS in db/neon-schema.sql is the authority, never frontend state.
+   These are PUBLIC Neon endpoints. Never embed role passwords or service secrets. */
 
+import { createClient } from "https://esm.sh/@neondatabase/neon-js@0.9.0-beta";
 const $ = (id) => document.getElementById(id);
-const CONFIG_URL = "fellowship.supabase.url";
-const CONFIG_KEY = "fellowship.supabase.publishable";
+const NEON_AUTH_URL = "https://ep-broad-waterfall-bbq2rh82.neonauth.c-15.us-east-1.aws.neon.tech/fellowship/auth";
+const NEON_DATA_URL = "https://ep-broad-waterfall-bbq2rh82.apirest.c-15.us-east-1.aws.neon.tech/fellowship/rest/v1";
 let db = null;
 let user = null;
 let communities = [];
@@ -40,57 +41,24 @@ function dateText(value) {
 }
 function owns(room) { return user && room.created_by === user.id; }
 
-function validateConfig(url, key) {
-  const parsed = new URL(url);
-  if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") {
-    throw new Error("Use an HTTPS Supabase project URL.");
-  }
-  if (!key || key.startsWith("sb_secret_") || key.includes("service_role")) {
-    throw new Error("Use only a public publishable or legacy anon key, never a secret key.");
-  }
-  // Older JWT anon keys contain the role claim in their payload.
-  if (key.split(".").length === 3) {
-    let claims;
-    try { claims = JSON.parse(atob(key.split(".")[1])); }
-    catch { throw new Error("That public key is not valid."); }
-    if (claims.role !== "anon") {
-      throw new Error("This is not an anon key. Never put a privileged key in the browser.");
-    }
-  } else if (!key.startsWith("sb_publishable_")) {
-    throw new Error("Expected a Supabase publishable key.");
-  }
-  return [parsed.origin, key];
+async function connect() {
+  db = createClient({ auth: { url: NEON_AUTH_URL }, dataApi: { url: NEON_DATA_URL } });
+  await refreshSession();
 }
 
-async function connect(url, key) {
-  const [base, publicKey] = validateConfig(url, key);
-  if (!window.supabase?.createClient) {
-    throw new Error("The Supabase browser SDK did not load. Check your network connection.");
-  }
-  db = window.supabase.createClient(base, publicKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-  });
-  localStorage.setItem(CONFIG_URL, base);
-  localStorage.setItem(CONFIG_KEY, publicKey);
-  db.auth.onAuthStateChange((_event, session) => {
-    const formerId = user?.id;
-    user = session?.user || null;
-    displaySession();
-    if (user && user.id !== formerId) {
-      queueMicrotask(() => action(refreshWorkspace));
-    }
-  });
-  const { data, error } = await db.auth.getUser();
-  if (error && error.name !== "AuthSessionMissingError") throw error;
+async function refreshSession() {
+  const { data, error } = await db.auth.getSession();
+  if (error) throw error;
+  const previousId = user?.id;
   user = data?.user || null;
   displaySession();
-  if (user) await refreshWorkspace();
-  else notice("Connected · Sign in to continue");
+  if (user && user.id !== previousId) await refreshWorkspace();
+  else if (user) notice("Signed in · " + user.email);
+  else notice("Ready · Sign in to participate");
 }
 
 function displaySession() {
-  $("setup-panel").hidden = Boolean(db);
-  $("auth-panel").hidden = !db || Boolean(user);
+  $("auth-panel").hidden = Boolean(user);
   $("workspace").hidden = !user;
   if (user) $("member-id").textContent = user.id;
 }
@@ -285,19 +253,30 @@ function drawActivity(events) {
 }
 
 function bindForms() {
-  $("setup-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    action(() => connect(cleanInput("project-url"), cleanInput("project-key")));
-  });
   $("login-form").addEventListener("submit", (e) => {
     e.preventDefault();
     action(async () => {
-      const { error } = await db.auth.signInWithOtp({
+      const { error } = await db.auth.signIn.email({
         email: cleanInput("login-email"),
-        options: { emailRedirectTo: window.location.origin + window.location.pathname }
+        password: $("login-password").value
       });
       if (error) throw error;
-      notice("Check your email for a sign-in link.");
+      $("login-password").value = "";
+      await refreshSession();
+    });
+  });
+  $("signup-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    action(async () => {
+      const { error } = await db.auth.signUp.email({
+        name: cleanInput("signup-name"),
+        email: cleanInput("signup-email"),
+        password: $("signup-password").value
+      });
+      if (error) throw error;
+      $("signup-password").value = "";
+      await refreshSession();
+      notice("Account created. Sign in if your session is not yet active.");
     });
   });
   $("community-form").addEventListener("submit", (e) => {
@@ -373,14 +352,6 @@ function bindForms() {
 }
 async function start() {
   bindForms();
-  const url = localStorage.getItem(CONFIG_URL);
-  const key = localStorage.getItem(CONFIG_KEY);
-  if (url && key) {
-    $("project-url").value = url;
-    $("project-key").value = key;
-    await action(() => connect(url, key));
-  } else {
-    displaySession();
-  }
+  await action(connect);
 }
 void start();
