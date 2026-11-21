@@ -116,14 +116,22 @@
               <h4>Invite someone to this room</h4>
               <p class="muted small">Issue one private link that expires in 48 hours. Optionally restrict it to the recipient's email. Links are single-use.</p>
               <form id="invite-form" class="stack">
-                <label>Recipient email (recommended, optional)<input id="invite-email" type="email" autocomplete="off" placeholder="collaborator@example.org"></label>
+                <label>Recipient email (to prepare an email)<input id="invite-email" type="email" autocomplete="off" placeholder="collaborator@example.org"></label>
                 <label>Room access<select id="invite-role"><option value="editor">Editor — can contribute tasks</option><option value="viewer">Viewer — read only</option></select></label>
-                <button class="primary" type="submit">Create private invitation</button>
+                <button id="prepare-email-invite" class="primary" type="submit">Prepare email invitation</button>
+                <button id="create-link-only" type="button" class="quiet">Create link instead</button>
               </form>
+              <p id="invite-feedback" class="room-feedback" role="status" aria-live="polite" hidden></p>
               <div id="generated-invite" class="stack invite-generated" hidden>
-                <label>Copy this one-time link<input id="invite-link" type="text" readonly></label>
+                <p id="invite-created-message" class="muted small" role="status" aria-live="polite">Your private invitation is ready.</p>
+                <div id="invite-email-options" class="invite-email-options" hidden>
+                  <a id="open-gmail-invite" class="draft-link" href="#" target="_blank" rel="noopener noreferrer">Open Gmail draft</a>
+                  <a id="open-mailto-invite" class="draft-link" href="#">Open email app</a>
+                  <p class="muted small">A preaddressed draft opens with the entire link. Review it and press Send in your email service.</p>
+                </div>
+                <label>Invitation link (manual fallback)<input id="invite-link" type="text" readonly></label>
                 <button id="copy-invite-link" type="button">Copy invitation link</button>
-                <p class="muted small">Send privately. Anyone holding an unrestricted link can redeem it before it expires.</p>
+                <p class="muted small">Keep this link private. It is valid for one person and expires in 48 hours.</p>
               </div>
               <div class="section-heading"><h4>Recent invitations</h4></div>
               <ul id="invite-list" class="plain-list compact-list"></ul>
