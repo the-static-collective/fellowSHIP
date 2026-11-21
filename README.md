@@ -6,7 +6,7 @@ This repository holds the [living vision](VISION.md) and the first independently
 
 ## What Commons 001 does
 
-- Neon managed email/password sign-in. Each contributor has their **own** account.
+- Neon managed email/password sign-in with required email-code verification. Each contributor has their **own** account.
 - Found a community (e.g. a congregation or cooperative group).
 - Create project rooms associated with that community.
 - Invite collaborators **from any church/account** by private, 48-hour, single-use room link, optionally bound to their email.
@@ -24,7 +24,7 @@ The project now has an isolated **Neon Free** backend under the **the static** N
 - Main branch: `br-dawn-cherry-bbnlokf9`
 - Database: `fellowship`
 - Managed Better Auth and the Neon Data API are provisioned.
-- Base tables, scoped read helpers and RLS are installed from [db/neon-schema.sql](db/neon-schema.sql); secure invitations from [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins from [db/003_room_checkins.sql](db/003_room_checkins.sql). These migrations have already been run in the dedicated project; do not rerun them.
+- Base tables and RLS are in [db/neon-schema.sql](db/neon-schema.sql); secure invitations in [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins in [db/003_room_checkins.sql](db/003_room_checkins.sql); verified-email redemption in [db/004_verified_invites.sql](db/004_verified_invites.sql). All have been applied to the dedicated Neon project. Do not rerun them.
 - No Supabase project was altered; [db/schema.sql](db/schema.sql) is retained only as a **Supabase reference**, and **must not** be applied to the Neon project.
 
 The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it does not contain a privileged database role password or API secret. Its dependency is pinned to a published Neon SDK release imported through a third-party ESM CDN. For more reliable production distribution, bundle and self-host the dependency after browser verification.
@@ -32,7 +32,7 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 ## Test the two-person pilot
 
 1. Serve the branch over HTTP(S), or publish through GitHub Pages. For local development, run `python3 -m http.server 8000` and browse `http://localhost:8000`. **Do not run directly from file://.**
-2. Create an account with your name, email, and password. Neon managed Auth uses independent accounts; the UI also supports signing in with an existing account.
+2. Create an account with your name, email and password; check your mailbox for a one-time code and enter it in **Verify your email address**. You can sign in using the same credentials later.
 3. Create a community such as "Real Life Church", then create a room such as "Friday Supper".
 4. Create a task and update its status.
 5. The room owner selects **Create private invitation**, selects viewer or editor, and preferably enters the recipient’s email. **Copy invitation link** and send it privately (never publish it in a general chat).
@@ -42,7 +42,7 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 
 **Deployment state:** The isolated database is provisioned and its structural privileges have been checked. End-to-end browser, email, and adversarial multi-account access testing is **not yet complete**. Keep out confidential pastoral, financial, and children's information. Full testing instructions: [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
-## Publishing to GitHub Pages
+## Protected Vercel pilot\n\nA static copy of the current draft branch is deployed as \`fellowship-commons-preview\` on the existing Vercel Hobby team. The alias \`https://fellowship-commons-preview.vercel.app\` is **protected by Vercel Authentication**. External testers need the temporary, private share-access URL supplied by the project owner. **Never commit the share token or an unredeemed room invite token.** Open the Vercel access link once in the same browser before opening a separate room invitation link. Vercel labels the deployment target \`production\`, but it remains a protected pilot, not a production-approved church system.\n\nHTML, JS and CSS return HTTP 200; full authenticated browser collaboration is not yet verified.\n\n## Publishing to GitHub Pages
 
 After the draft PR has passed checks and been merged, enable **Settings → Pages** for the repository and publish `main`/`root`. The Neon Auth redirect allowlist already includes `https://the-static-collective.github.io`. Verify the actual deployment URL, CORS behavior, and browser authentication before inviting anyone.
 
