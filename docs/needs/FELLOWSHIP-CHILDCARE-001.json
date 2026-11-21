@@ -6,7 +6,7 @@
   "source": {
     "class": "ORGANIZER_DECLARED",
     "date": "2026-11-21",
-    "note": "The organizer requested that actual childcare, rather than an invented supper, be the first real nuThang need. Event venue and public schedule follow the organizer-approved FELLOWSHIP outreach brief."
+    "note": "Organizer requested real childcare and clarified that Riverside likely has no existing caregiver available. Treat on-site childcare staff as UNKNOWN/LIKELY_MISSING, never assume a childcare lead or internal team exists. Event venue and schedule come from organizer-approved outreach."
   },
   "status": "OPEN_UNFILLED",
   "event": {
@@ -15,9 +15,19 @@
     "venue": "Riverside Church",
     "publicAddress": "3401 Boardman Street, Minneapolis, MN 55417, USA",
     "scheduleLocal": [
-      { "at": "17:00", "activity": "community supper" },
-      { "at": "19:00", "activity": "prayer" },
-      { "from": "20:00", "until": "21:30", "activity": "open mic, music and poetry" }
+      {
+        "at": "17:00",
+        "activity": "community supper"
+      },
+      {
+        "at": "19:00",
+        "activity": "prayer"
+      },
+      {
+        "from": "20:00",
+        "until": "21:30",
+        "activity": "open mic, music and poetry"
+      }
     ],
     "timezone": "America/Chicago"
   },
@@ -30,7 +40,36 @@
     "accessibilityAndSupportNeeds": "COLLECT_PRIVATELY_BY_AUTHORIZED_HOST_ONLY",
     "guardianLocation": "TO_BE_CONFIRMED_WITH_HOST"
   },
-  "publicCandidateProviders": [],
+  "publicCandidateProviders": [
+    {
+      "name": "SitterTree Minneapolis church childcare",
+      "kind": "paid_church_sitter_marketplace",
+      "officialUrl": "https://www.sittertree.com/church-child-care/mn/minneapolis",
+      "evidence": "Public church-care search with Minneapolis providers; availability, costs, credentials and fit for this event unverified",
+      "state": "DISCOVERY_LEAD_NOT_OFFER"
+    },
+    {
+      "name": "Jovie of Edina — church and special event staffing",
+      "kind": "paid_event_staffing_agency",
+      "officialUrl": "https://www.jovie.com/locations/mn/edina/jovie-of-edina/church-childcare-staffing/",
+      "evidence": "Agency advertises supervised church and event staffing in Minneapolis area; ask about Dec 4, rates, minimums and policy",
+      "state": "DISCOVERY_LEAD_NOT_OFFER"
+    },
+    {
+      "name": "Lake Nokomis Lutheran Church",
+      "kind": "neighbor_church_possible_referral",
+      "officialUrl": "https://www.lakenokomischurch.org/worship.html",
+      "evidence": "Church describes childcare upon request; ask only for advice or a possible voluntary referral, not presumed personnel availability",
+      "state": "DISCOVERY_LEAD_NOT_OFFER"
+    },
+    {
+      "name": "Trinity Lutheran of Minnehaha Falls",
+      "kind": "neighbor_church_possible_referral",
+      "officialUrl": "https://www.trinityfalls.org/visit",
+      "evidence": "Church publishes regular-service nursery arrangements; ask for advice or vetted referrals, not presumed event care",
+      "state": "DISCOVERY_LEAD_NOT_OFFER"
+    }
+  ],
   "hostApproval": "NOT_RECORDED",
   "screenedStaff": "NOT_RECORDED",
   "approvedSpace": "NOT_RECORDED",
@@ -51,19 +90,21 @@
   },
   "safetyGates": [
     "Authorized Riverside/FELLOWSHIP host decides whether any care will be offered and determines applicable Minnesota licensing requirements",
-    "Host selects, screens and approves caregivers under a written safeguarding policy, including a two-adult practice where applicable",
+    "An actual external provider or adult team must be found and independently approved by the host; host verifies screening, supervision, staffing ratios and safeguarding, including a two-adult practice where appropriate",
     "Host checks age-appropriate staffing capacity and the suitability of the designated space",
     "Host establishes parent or guardian authorization, attendance and release procedures, emergency response and escalation",
     "Host determines precise hours and communicates what care is or is not available",
     "Actual adult caregivers explicitly accept the specific commitment; public interest is never automatic assignment"
   ],
   "fallback": "Until host-authorized, properly staffed childcare is confirmed, do not advertise childcare as available. Children remain in the care of their parent or legal guardian; explore parent-accompanied participation or a guardian-supported family area only with host agreement.",
-  "nextPublicStep": "Ask the authorized Riverside event/children's-ministry lead whether the church can approve a safe program for a defined portion of December 4; request private age/count planning through the host, not via a public form.",
+  "nextPublicStep": "Pursue two parallel tracks: (A) ask external event/church childcare providers for possible date, coverage, screening and low-cost or donated staffing, without claiming availability; (B) ask the authorized Riverside event host whether an appropriate room, insurance and safeguarding approval can be provided. Do not assume an in-house childcare lead exists.",
   "doesNotClaim": [
     "a childcare provider is available",
     "any person is screened, trained, licensed, cleared, assigned, or volunteering",
     "host authorization, guardian consent, or legal exemption",
     "any child's attendance, safety or identity",
     "any real-world care has occurred"
-  ]
+  ],
+  "staffingAssumption": "NO_INTERNAL_CHILDCARE_PROVIDER_IDENTIFIED",
+  "discoveryPriority": "FIND_EXTERNAL_CHILDCARE_PROVIDER_OR_APPROVED_ADULT_TEAM"
 }
