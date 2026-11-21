@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132f2a">
+  <meta name="description" content="fellowSHIP: a digital commons for churches to make things together.">
+  <title>fellowSHIP | The Commons</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Pinned SDK for the zero-build pilot. Production should self-host with SRI. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.min.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark">fS</span><div><strong>fellow<span>SHIP</span></strong><small>the shared makerspace</small></div></div>
+    <div class="header-right"><span id="status" class="status" aria-live="polite">Ready to connect</span></div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">THE COMMONS · PILOT 001</div>
+      <h1>Make something good, <em>together.</em></h1>
+      <p>Independent people. Shared work. One durable place for a church's ideas, projects, tasks, and handoffs.</p>
+    </section>
+
+    <section id="setup-panel" class="panel setup-panel">
+      <h2>Connect your commons</h2>
+      <p class="muted">A church administrator sets up a dedicated Supabase project once. Enter its project URL and <strong>publishable</strong> key below. Never use a secret or service-role key here.</p>
+      <form id="setup-form" class="stack">
+        <label>Project URL<input id="project-url" type="url" placeholder="https://your-project.supabase.co" required autocomplete="url"></label>
+        <label>Publishable key<input id="project-key" type="text" placeholder="sb_publishable_…" required autocomplete="off"></label>
+        <button class="primary" type="submit">Connect</button>
+      </form>
+      <p class="note">These public connection settings stay in this browser. The database—not this page—enforces who can access each room.</p>
+    </section>
+
+    <section id="auth-panel" class="panel auth-panel" hidden>
+      <h2>Sign in to your community</h2>
+      <p class="muted">We'll email you a sign-in link. Each collaborator uses their own account.</p>
+      <form id="login-form" class="inline-form">
+        <label class="grow">Your email<input id="login-email" type="email" placeholder="you@example.org" autocomplete="email" required></label>
+        <button class="primary" type="submit">Email me a link</button>
+      </form>
+      <p class="note">You'll return here after opening the email. Ask a room owner to add your member ID to a shared room.</p>
+    </section>
+
+    <section id="workspace" hidden>
+      <div class="welcome">
+        <div><h2>Your shared workspace</h2><p class="muted">You see only your communities and the rooms you've been invited to.</p></div>
+        <div class="identity"><span>Your member ID</span><button id="copy-id" class="copy-id" type="button" title="Copy your account ID"><code id="member-id">—</code><span>Copy</span></button><button id="sign-out" type="button" class="quiet">Sign out</button></div>
+      </div>
+
+      <div class="workspace-grid">
+        <section class="panel">
+          <div class="panel-top"><h3>Communities</h3><span class="chip">Local identity</span></div>
+          <ul id="community-list" class="plain-list"></ul>
+          <form id="community-form" class="stack separated">
+            <label>Start a community<input id="community-name" type="text" maxlength="100" placeholder="e.g. Real Life Church" required></label>
+            <button type="submit">Create community</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-top"><h3>Project rooms</h3><span class="chip">Shared work</span></div>
+          <ul id="room-list" class="room-list plain-list"></ul>
+          <form id="room-form" class="stack separated">
+            <label>Community<select id="room-community" required></select></label>
+            <label>New room<input id="room-name" type="text" maxlength="100" placeholder="e.g. Friday supper" required></label>
+            <button type="submit">Create room</button>
+          </form>
+          <button id="refresh" class="quiet full" type="button">Refresh shared work</button>
+        </section>
+
+        <section class="panel detail-panel" aria-label="Selected project room">
+          <div id="room-empty" class="empty">
+            <span class="empty-symbol">✳</span><h3>Find your room</h3>
+            <p>Choose a project to see its tasks and history. Projects can include people from different churches.</p>
+          </div>
+          <div id="room-detail" hidden>
+            <div class="panel-top"><div><div class="eyebrow" id="room-parent">COMMUNITY</div><h3 id="room-title">Room</h3></div><span id="room-role" class="chip">Participant</span></div>
+            <p id="room-description" class="muted"></p>
+            <div class="section-heading"><h4>Tasks</h4><span id="task-count" class="muted"></span></div>
+            <ul id="task-list" class="plain-list task-list"></ul>
+            <form id="task-form" class="stack separated">
+              <label>New task<input id="task-title" type="text" maxlength="200" placeholder="What should be done?" required></label>
+              <label>Details (optional)<textarea id="task-details" maxlength="5000" rows="2" placeholder="What does done look like?"></textarea></label>
+              <button type="submit">Add task</button>
+            </form>
+            <div class="section-heading"><h4>People in this room</h4></div>
+            <ul id="members-list" class="plain-list compact-list"></ul>
+            <form id="member-form" class="stack separated" hidden>
+              <p class="muted">Pilot invitations: ask someone to copy their member ID after signing in. Add that ID with the access you intend to grant.</p>
+              <label>Collaborator member ID<input id="invite-user" type="text" placeholder="UUID from their workspace" required></label>
+              <label>Access<select id="invite-role"><option value="viewer">Viewer — read only</option><option value="editor">Editor — add and update tasks</option></select></label>
+              <button type="submit">Grant room access</button>
+            </form>
+            <div class="section-heading"><h4>Activity history</h4><span class="muted">Recorded by the database</span></div>
+            <ul id="activity-list" class="plain-list activity-list"></ul>
+          </div>
+        </section>
+      </div>
+      <p class="footer-note">fellowSHIP Commons 001 · No shared passwords · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
+    </section>
+  </main>
+</body>
+</html>
