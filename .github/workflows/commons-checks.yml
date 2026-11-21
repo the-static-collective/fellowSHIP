@@ -14,6 +14,8 @@ jobs:
           node-version: '22'
       - name: Parse JavaScript
         run: node --check app.js
+      - name: Parse secure email sender
+        run: node --check functions/sendinvite/index.mjs
       - name: Verify complete email draft links
         run: node --test tests/invitation_email.test.mjs
       - name: Inspect HTML elements and SQL RLS declarations
@@ -35,6 +37,7 @@ jobs:
           checkins = Path('db/003_room_checkins.sql').read_text().lower()
           verified = Path('db/004_verified_invites.sql').read_text().lower()
           room_rpc = Path('db/005_create_room_rpc.sql').read_text().lower()
+          email_rpc = Path('db/006_email_delivery.sql').read_text().lower()
           p = IDs()
           p.feed(html)
           assert len(p.ids) == len(set(p.ids)), 'Duplicate element ID'
@@ -55,6 +58,10 @@ jobs:
           assert 'c.created_by = actor' in room_rpc
           assert 'public.create_fellowship_room(uuid,text) to authenticated' in room_rpc
           assert 'db.rpc("create_fellowship_room"' in js
+          assert 'create function public.reserve_room_invite_email' in email_rpc
+          assert 'i.invited_by = me' in email_rpc
+          assert 'last_email_attempt_at' in email_rpc
+          assert 'grant execute on function public.reserve_room_invite_email(text) to authenticated' in email_rpc
           assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'
           assert 'neon_auth' in sql, 'Expected Neon identity schema'
           print(f'Checked {len(referenced)} JS element references and seven RLS tables.')
