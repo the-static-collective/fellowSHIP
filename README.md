@@ -2,15 +2,15 @@
 
 **An open digital commons for churches and neighbors to make things together.**
 
-This repository holds the [living vision](VISION.md) and the first independently deployable code slice: **Commons 001**. The first slice is a small shared workspace, **not** a deployed radio network or a finished multi-tenant platform.
+This repository holds the [living vision](VISION.md) and the first independently deployable code slice: **Commons 001**. The first two slices form a small shared workspace, **not** a deployed radio network or a finished multi-tenant platform.
 
 ## What Commons 001 does
 
 - Neon managed email/password sign-in. Each contributor has their **own** account.
 - Found a community (e.g. a congregation or cooperative group).
 - Create project rooms associated with that community.
-- Add collaborators **from any church/account** to a room as viewer or editor.
-- Create tasks, change their status, and read the durable activity history.
+- Invite collaborators **from any church/account** by private, 48-hour, single-use room link, optionally bound to their email.
+- Create tasks, change their status, and read the durable activity history. Each person can mark a room caught up across devices.
 - Access the same tasks from distinct accounts and devices. The **database** is the shared source of truth, not a ChatGPT conversation.
 - Authenticate with Neon Auth and authorize writes with Postgres row-level security, not frontend UI logic.
 
@@ -24,7 +24,7 @@ The project now has an isolated **Neon Free** backend under the **the static** N
 - Main branch: `br-dawn-cherry-bbnlokf9`
 - Database: `fellowship`
 - Managed Better Auth and the Neon Data API are provisioned.
-- Tables, scoped read helpers, and RLS are installed from [db/neon-schema.sql](db/neon-schema.sql).
+- Base tables, scoped read helpers and RLS are installed from [db/neon-schema.sql](db/neon-schema.sql); secure invitations from [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins from [db/003_room_checkins.sql](db/003_room_checkins.sql). These migrations have already been run in the dedicated project; do not rerun them.
 - No Supabase project was altered; [db/schema.sql](db/schema.sql) is retained only as a **Supabase reference**, and **must not** be applied to the Neon project.
 
 The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it does not contain a privileged database role password or API secret. Its dependency is pinned to a published Neon SDK release imported through a third-party ESM CDN. For more reliable production distribution, bundle and self-host the dependency after browser verification.
@@ -35,10 +35,10 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 2. Create an account with your name, email, and password. Neon managed Auth uses independent accounts; the UI also supports signing in with an existing account.
 3. Create a community such as "Real Life Church", then create a room such as "Friday Supper".
 4. Create a task and update its status.
-5. A second person creates their own account and copies their full member ID from the workspace, sharing that UUID privately with the room owner.
-6. The room owner grants viewer or editor access. The second person selects **Refresh shared work** to fetch changes.
+5. The room owner selects **Create private invitation**, selects viewer or editor, and preferably enters the recipient’s email. **Copy invitation link** and send it privately (never publish it in a general chat).
+6. The second person opens the link, creates or signs into their own account, and clicks **Accept invitation**. The invited room becomes available; use **Refresh shared work** to fetch new changes.
 7. Verify that the second person can see the authorized room and its history but cannot access an unrelated room.
-8. The room owner can change or revoke membership from the **People in this room** controls.
+8. The room owner can revoke unused links or change/revoke membership from the room controls. Each person can review **Since your last check-in** and click **Mark caught up**; the checkpoint is stored per account, not just in the browser.
 
 **Deployment state:** The isolated database is provisioned and its structural privileges have been checked. End-to-end browser, email, and adversarial multi-account access testing is **not yet complete**. Keep out confidential pastoral, financial, and children's information. Full testing instructions: [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
@@ -72,9 +72,9 @@ Browser / human                          Future: ChatGPT or other AI
 
 ## Current deliberate limits
 
-- **Invites are by full Auth user UUID**, not email/invite links. The invitee must have signed in at least once. Use a private communication channel to share the ID. A time-bound invitation service is an immediate next step.
+- **Invitations use hashed 256-bit tokens** and expire after 48 hours; optionally restrict the redemption to a specific signed-in email. There is no automatic email delivery—send the link privately. Revocation only applies before it is redeemed.
 - **Only a community's founder can create its rooms.** Additional organization-level administrators, transfer of ownership, room archiving, and community-wide role management are future features.
-- **No real-time push.** Refresh explicitly to pull the latest state; no automatic polling or websocket subscriptions.
+- **No real-time push.** Refresh explicitly to pull the latest state; no automatic polling or websocket subscriptions. The cross-device catch-up view currently summarizes the latest 40 recorded task events, not every possible event in a busy room.
 - **No editing project metadata, task deletion, or event deletion.** An append-only task activity log records author IDs, titles, and status changes; history itself is never writable from the browser.
 - **No radio, Suno, R2, public streams, shared-federation moderation, or live MCP endpoint yet.** Those are later increments gated by editorial approval, rights metadata, and authentication.
 - Church membership alone does **not** grant access to every room. Rooms are private to their creator and specifically added members.
@@ -87,7 +87,7 @@ node --check app.js
 python3 -m http.server 8000
 ```
 
-The isolated Neon schema has been applied and structurally inspected. Real browser login and multi-account denial tests remain required before real-world church use.
+The isolated Neon schema and Commons 002 additions have been applied and structurally inspected. Real browser login and multi-account denial tests remain required before real-world church use.
 
 ## Guiding principle
 
