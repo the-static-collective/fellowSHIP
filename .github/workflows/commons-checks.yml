@@ -37,6 +37,7 @@ jobs:
           assert not missing, f'JS references missing HTML IDs: {missing}'
           for table in ['communities', 'rooms', 'room_members', 'tasks', 'activity']:
               assert f'alter table public.{table} enable row level security;' in sql
-          assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'\n          assert 'neon_auth' in sql, 'Expected Neon identity schema'
+          assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'
+          assert 'neon_auth' in sql, 'Expected Neon identity schema'
           print(f'Checked {len(referenced)} JS element references and five RLS tables.')
           PY
