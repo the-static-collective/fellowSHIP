@@ -24,7 +24,7 @@ The project now has an isolated **Neon Free** backend under the **the static** N
 - Main branch: `br-dawn-cherry-bbnlokf9`
 - Database: `fellowship`
 - Managed Better Auth and the Neon Data API are provisioned.
-- Base tables and RLS are in [db/neon-schema.sql](db/neon-schema.sql); secure invitations in [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins in [db/003_room_checkins.sql](db/003_room_checkins.sql); verified-email redemption in [db/004_verified_invites.sql](db/004_verified_invites.sql). All have been applied to the dedicated Neon project. Do not rerun them.
+- Base tables and RLS are in [db/neon-schema.sql](db/neon-schema.sql); secure invitations in [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins in [db/003_room_checkins.sql](db/003_room_checkins.sql); verified-email redemption in [db/004_verified_invites.sql](db/004_verified_invites.sql); guarded room creation in [db/005_create_room_rpc.sql](db/005_create_room_rpc.sql). All have been applied to the dedicated Neon project. Do not rerun them.
 - No Supabase project was altered; [db/schema.sql](db/schema.sql) is retained only as a **Supabase reference**, and **must not** be applied to the Neon project.
 
 The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it does not contain a privileged database role password or API secret. Its dependency is pinned to a published Neon SDK release imported through a third-party ESM CDN. For more reliable production distribution, bundle and self-host the dependency after browser verification.
@@ -33,7 +33,7 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 
 1. Open `https://fellowship.abundent.org` after its HTTPS certificate is active. For local development, run `python3 -m http.server 8000` and browse `http://localhost:8000`. **Do not run directly from file://.**
 2. Create an account with your name, email and password; check your mailbox for a one-time code and enter it in **Verify your email address**. You can sign in using the same credentials later.
-3. Create a community such as "Real Life Church", then create a room such as "Friday Supper".
+3. Create a community such as "Real Life Church", then create a room such as "Friday Supper". Room creation uses an owner-checked RPC and displays progress or server errors directly under the button.
 4. Create a task and update its status.
 5. The room owner selects **Create private invitation**, selects viewer or editor, and preferably enters the recipient’s email. **Copy invitation link** and send it privately (never publish it in a general chat).
 6. The second person opens the link, creates or signs into their own account, and clicks **Accept invitation**. The invited room becomes available; use **Refresh shared work** to fetch new changes.
