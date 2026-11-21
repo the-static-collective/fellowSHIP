@@ -109,3 +109,7 @@ main { max-width: 1420px; margin: auto; padding: 0 clamp(1rem, 3vw, 2rem) 3rem; 
 .member-row span { flex: 1 1 100px; }
 .member-row select { width: 92px; padding: .36rem; font-size: .74rem; }
 .member-row button { padding: .32rem; font-size: .73rem; }
+
+.auth-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1rem; margin: 1rem 0; }
+.auth-grid form { padding: .8rem; border: 1px solid var(--border); border-radius: 12px; background: #fafcf9; }
+@media (max-width: 680px) { .auth-grid { grid-template-columns: 1fr; } }
