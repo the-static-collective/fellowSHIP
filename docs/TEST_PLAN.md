@@ -6,16 +6,28 @@
 
 ## Functional acceptance
 
-1. A signs in, creates **Church A**, then creates the **Friday Supper** room.
-2. A creates the task "Confirm kitchen" and sets it to **In progress**. Activity should show `task_created` followed by `task_updated`, actor A, and timestamps.
-3. B signs in with another account, copies their full Member ID, and shares it privately with A.
-4. A adds B as **viewer** to Friday Supper. On refresh, B sees the room, tasks, people, and activity but has no task-entry form and cannot change task status.
-5. A changes B's role to **editor** using the room's people controls. B refreshes and can create/update tasks.
-6. A and B open the room from separate browsers; B changes a task and A refreshes to see the change and event.
-7. A creates a second room **Leadership Notes** and does **not** invite B. B must not see it.
-8. C signs in independently. C must see neither Church A nor either room before being invited.
-9. Optionally C creates **Church C** and its own room. A must not see that room unless invited.
-10. A explicitly adds C to Friday Supper. C can now see the shared room without gaining access to Leadership Notes.
+1. A signs in, creates **Church A**, then creates a **Friday Supper** room.
+2. A creates a task "Confirm kitchen", changes it to **In progress**, and checks activity records actor/time.
+3. A selects **Create private invitation**, chooses **editor**, and optionally restricts the link to B's email. The raw link is shown once in the UI; the database stores only a SHA-256 digest.
+4. B opens the link from a separate device/browser. If signed out, B signs up or logs in, then explicitly selects **Accept invitation**.
+5. B can read/edit tasks in Friday Supper and see the history, but not **Leadership Notes**, a room A creates separately without inviting B.
+6. A creates a second **viewer** link. C opens it and can read but cannot create/update tasks.
+7. B marks **Caught up**; when B opens the room from another browser under the same account, the saved check-in timestamp is reflected. New task events appear on the next refresh.
+8. A revokes an unused link and verifies redemption fails. A uses the member control to revoke B's access; subsequent B reads and writes to Friday Supper fail. Future events cannot be read after removal.
+9. C creates **Church C** and a separate room. A and B cannot read its records without an invitation.
+10. After a review, A may create another restricted editor link for one other church collaborator; verify that sharing a room never grants access to either church's unrelated rooms.
+
+## Invitation and check-in denial tests
+
+- **No JWT:** the `anonymous` role must have zero table grants; test all four public invitation RPCs deny unauthenticated calls.
+- **Token replay:** redeem a single-use invitation twice, including concurrently. The second attempt must fail.
+- **Token confidentiality:** confirm `room_invites` stores only a 32-byte hash, never the raw token; browser URL fragment is cleared from the address bar after loading. Do not put invite links in public docs, logs or screenshots.
+- **Recipient binding:** an invitation restricted to B's email must fail when C attempts redemption.
+- **Expiry and revocation:** expired and owner-revoked tokens cannot be redeemed. Revoke after redemption should not revoke membership; room-owner membership removal is a separate operation.
+- **Role scope:** viewer invitation grants no task writes. Editor invitation grants only tasks and not room-owner privileges.
+- **Room privacy:** external invitees can only read the one room they accepted; no sibling-room or private community records.
+- **Check-in privacy:** a person can read/write only their own room checkpoint, and only while they can read that room. Role changes or revocation must block checkpoint access.
+- **Cross-device check-in:** run with genuine accounts. No owner-role SQL test can replace it.
 
 ## Security/negative tests (using the authenticated client, not a service-role key)
 
