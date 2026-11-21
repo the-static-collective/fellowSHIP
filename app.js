@@ -99,7 +99,11 @@ async function refreshWorkspace() {
   if (roomResponse.error) throw roomResponse.error;
   communities = communityResponse.data || [];
   rooms = roomResponse.data || [];
-  if (!rooms.some((r) => r.id === currentRoom)) currentRoom = rooms[0]?.id || null;
+  if (!rooms.some((r) => r.id === currentRoom)) {
+    currentRoom = rooms[0]?.id || null;
+    $("invite-link").value = "";
+    $("generated-invite").hidden = true;
+  }
   drawCommunities();
   drawRooms();
   if (currentRoom) await loadRoom();
@@ -142,6 +146,10 @@ function drawRooms() {
     const community = communities.find((c) => c.id === room.community_id);
     addText(button, "span", community?.name || "Shared community", "muted small");
     button.addEventListener("click", () => action(async () => {
+      if (room.id !== currentRoom) {
+        $("invite-link").value = "";
+        $("generated-invite").hidden = true;
+      }
       currentRoom = room.id;
       drawRooms();
       await loadRoom();
@@ -453,6 +461,8 @@ function bindForms() {
     communities = [];
     rooms = [];
     currentRoom = null;
+    $("invite-link").value = "";
+    $("generated-invite").hidden = true;
     displaySession();
     notice("Signed out");
   }));
