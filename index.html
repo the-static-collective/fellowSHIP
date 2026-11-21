@@ -7,9 +7,8 @@
   <meta name="description" content="fellowSHIP: a digital commons for churches to make things together.">
   <title>fellowSHIP | The Commons</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Pinned SDK for the zero-build pilot. Production should self-host with SRI. -->
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.js"></script>
-  <script defer src="app.js"></script>
+  <!-- Pinned ESM package for this isolated Neon pilot. Future production: bundle and self-host. -->
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <header class="masthead">
@@ -23,25 +22,25 @@
       <p>Independent people. Shared work. One durable place for a church's ideas, projects, tasks, and handoffs.</p>
     </section>
 
-    <section id="setup-panel" class="panel setup-panel">
-      <h2>Connect your commons</h2>
-      <p class="muted">A church administrator sets up a dedicated Supabase project once. Enter its project URL and <strong>publishable</strong> key below. Never use a secret or service-role key here.</p>
-      <form id="setup-form" class="stack">
-        <label>Project URL<input id="project-url" type="url" placeholder="https://your-project.supabase.co" required autocomplete="url"></label>
-        <label>Publishable key<input id="project-key" type="text" placeholder="sb_publishable_…" required autocomplete="off"></label>
-        <button class="primary" type="submit">Connect</button>
-      </form>
-      <p class="note">These public connection settings stay in this browser. The database—not this page—enforces who can access each room.</p>
-    </section>
-
-    <section id="auth-panel" class="panel auth-panel" hidden>
-      <h2>Sign in to your community</h2>
-      <p class="muted">We'll email you a sign-in link. Each collaborator uses their own account.</p>
-      <form id="login-form" class="inline-form">
-        <label class="grow">Your email<input id="login-email" type="email" placeholder="you@example.org" autocomplete="email" required></label>
-        <button class="primary" type="submit">Email me a link</button>
-      </form>
-      <p class="note">You'll return here after opening the email. Ask a room owner to add your member ID to a shared room.</p>
+    <section id="auth-panel" class="panel auth-panel">
+      <h2>Enter the Commons</h2>
+      <p class="muted">Use an individual church or personal account. Projects are visible only after someone grants you access.</p>
+      <div class="auth-grid">
+        <form id="login-form" class="stack">
+          <h3>Sign in</h3>
+          <label>Email<input id="login-email" type="email" autocomplete="email" required></label>
+          <label>Password<input id="login-password" type="password" autocomplete="current-password" minlength="8" required></label>
+          <button class="primary" type="submit">Sign in</button>
+        </form>
+        <form id="signup-form" class="stack">
+          <h3>Create an account</h3>
+          <label>Your name<input id="signup-name" type="text" autocomplete="name" maxlength="100" required></label>
+          <label>Email<input id="signup-email" type="email" autocomplete="email" required></label>
+          <label>Password (at least 8 characters)<input id="signup-password" type="password" autocomplete="new-password" minlength="8" required></label>
+          <button type="submit">Join fellowSHIP</button>
+        </form>
+      </div>
+      <p class="note">This pilot uses Neon's managed authentication. A church account does not grant access to confidential rooms; each invitation is explicit. Do not upload confidential pastoral, financial, or children's information during pilot testing.</p>
     </section>
 
     <section id="workspace" hidden>
@@ -99,7 +98,7 @@
           </div>
         </section>
       </div>
-      <p class="footer-note">fellowSHIP Commons 001 · No shared passwords · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
+      <p class="footer-note">fellowSHIP Commons 001 · Independent accounts · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
     </section>
   </main>
 </body>
