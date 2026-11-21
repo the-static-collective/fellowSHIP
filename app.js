@@ -228,9 +228,45 @@ function drawMembers(room, members) {
   list.replaceChildren();
   addText(list, "li", "Owner · " + (room.created_by === user.id ? "You" : shortId(room.created_by)));
   for (const member of members) {
-    addText(list, "li",
+    const li = document.createElement("li");
+    li.className = "member-row";
+    addText(li, "span",
       (member.user_id === user.id ? "You" : shortId(member.user_id)) + " · " + member.role
     );
+    if (owns(room)) {
+      const role = document.createElement("select");
+      role.setAttribute("aria-label", "Access level for " + shortId(member.user_id));
+      for (const value of ["viewer", "editor"]) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        role.append(option);
+      }
+      role.value = member.role;
+      role.addEventListener("change", () => action(async () => {
+        const { error } = await db.from("room_members")
+          .update({ role: role.value })
+          .eq("room_id", room.id).eq("user_id", member.user_id);
+        if (error) { role.value = member.role; throw error; }
+        await loadRoom();
+        notice("Collaborator access updated");
+      }));
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "quiet";
+      remove.textContent = "Remove";
+      remove.setAttribute("aria-label", "Remove " + shortId(member.user_id) + " from room");
+      remove.addEventListener("click", () => action(async () => {
+        if (!window.confirm("Remove this person's access to the room?")) return;
+        const { error } = await db.from("room_members").delete()
+          .eq("room_id", room.id).eq("user_id", member.user_id);
+        if (error) throw error;
+        await loadRoom();
+        notice("Access revoked");
+      }));
+      li.append(role, remove);
+    }
+    list.append(li);
   }
 }
 function drawActivity(events) {
