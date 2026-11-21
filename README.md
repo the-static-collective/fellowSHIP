@@ -33,7 +33,7 @@ There is deliberately **no service-role secret in the app**, no public searchabl
 5. Paste the project's **Project URL** and **publishable** (`sb_publishable_...`) key into the Connect screen. A legacy **anon** key is also accepted. **Never enter a service_role or secret key.** The public connection settings are stored in browser localStorage.
 6. Sign in with a valid email, then create a community and room.
 7. A second person signs in separately, copies their full **Member ID**, and sends it privately to the room owner. The owner opens that room and grants editor or viewer access to the exact ID.
-8. The second person hits **Refresh shared work**. They can read the room and, if an editor, create/update tasks. Both can see the activity history.
+8. The second person hits **Refresh shared work**. They can read the room and, if an editor, create/update tasks. Both can see the activity history. The owner can then edit their role or revoke access using the room's people controls.
 
 For full checks, including isolation and deliberate denial tests, see [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
@@ -70,7 +70,7 @@ Browser / human                          Future: ChatGPT or other AI
 ## Current deliberate limits
 
 - **Invites are by full Auth user UUID**, not email/invite links. The invitee must have signed in at least once. Use a private communication channel to share the ID. A time-bound invitation service is an immediate next step.
-- **Only a community's founder can create its rooms.** Additional organization-level administrators, transfer of ownership, room archiving, and role management are future features.
+- **Only a community's founder can create its rooms.** Additional organization-level administrators, transfer of ownership, room archiving, and community-wide role management are future features.
 - **No real-time push.** Refresh explicitly to pull the latest state; no automatic polling or websocket subscriptions.
 - **No editing project metadata, task deletion, or event deletion.** An append-only task activity log records author IDs, titles, and status changes; history itself is never writable from the browser.
 - **No radio, Suno, R2, public streams, shared-federation moderation, or live MCP endpoint yet.** Those are later increments gated by editorial approval, rights metadata, and authentication.
