@@ -83,7 +83,8 @@
           <form id="room-form" class="stack separated">
             <label>Community<select id="room-community" required></select></label>
             <label>New room<input id="room-name" type="text" maxlength="100" placeholder="e.g. Friday supper" required></label>
-            <button type="submit">Create room</button>
+            <button id="create-room" type="submit">Create room</button>
+            <p id="room-feedback" class="room-feedback" role="status" aria-live="polite" hidden></p>
           </form>
           <button id="refresh" class="quiet full" type="button">Refresh shared work</button>
         </section>

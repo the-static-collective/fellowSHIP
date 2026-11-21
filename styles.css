@@ -134,3 +134,8 @@ main { max-width: 1420px; margin: auto; padding: 0 clamp(1rem, 3vw, 2rem) 3rem; 
 .verify-panel { margin-top: 1.2rem; padding: 1rem; border: 1px solid #a7bea8; border-radius: 12px; background: #f4fbf2; }
 .verify-panel h3 { margin-bottom: .35rem; }
 .verify-panel form { margin-top: .8rem; }
+
+/* Room-creation feedback must remain beside the form on narrow screens. */
+.room-feedback { margin: .55rem 0 0; padding: .65rem .75rem; border-radius: .6rem; background: #edf7ed; color: #244b35; font-size: .84rem; overflow-wrap: anywhere; }
+.room-feedback[data-error="true"] { background: #fff0ed; color: #923527; }
+#room-form button:disabled { opacity: .55; cursor: wait; }
