@@ -1,0 +1,69 @@
+{
+  "schema": "fellowship.public-need/0.1",
+  "needRef": "need:fellowship-childcare-2026-12-04",
+  "title": "Actual, safe childcare for FELLOWSHIP",
+  "scope": "PUBLIC_NON_IDENTIFYING_PLANNING_ONLY",
+  "source": {
+    "class": "ORGANIZER_DECLARED",
+    "date": "2026-11-21",
+    "note": "The organizer requested that actual childcare, rather than an invented supper, be the first real nuThang need. Event venue and public schedule follow the organizer-approved FELLOWSHIP outreach brief."
+  },
+  "status": "OPEN_UNFILLED",
+  "event": {
+    "name": "FELLOWSHIP: Family & Friends Open Mic Night",
+    "date": "2026-12-04",
+    "venue": "Riverside Church",
+    "publicAddress": "3401 Boardman Street, Minneapolis, MN 55417, USA",
+    "scheduleLocal": [
+      { "at": "17:00", "activity": "community supper" },
+      { "at": "19:00", "activity": "prayer" },
+      { "from": "20:00", "until": "21:30", "activity": "open mic, music and poetry" }
+    ],
+    "timezone": "America/Chicago"
+  },
+  "service": {
+    "requested": "Real, organized, age-appropriate on-site childcare or supervised children's program during agreed parts of the FELLOWSHIP event",
+    "coverageStartLocal": null,
+    "coverageEndLocal": null,
+    "expectedChildCount": null,
+    "ageBands": null,
+    "accessibilityAndSupportNeeds": "COLLECT_PRIVATELY_BY_AUTHORIZED_HOST_ONLY",
+    "guardianLocation": "TO_BE_CONFIRMED_WITH_HOST"
+  },
+  "publicCandidateProviders": [],
+  "hostApproval": "NOT_RECORDED",
+  "screenedStaff": "NOT_RECORDED",
+  "approvedSpace": "NOT_RECORDED",
+  "caregiverCoverage": "NOT_RECORDED",
+  "safeguardingPlan": "NOT_RECORDED",
+  "licensingDetermination": "NOT_RECORDED",
+  "parentCommunicationsPlan": "NOT_RECORDED",
+  "publicAdvertiseCare": false,
+  "mayAssignChildren": false,
+  "dataBoundary": {
+    "doNotCollectInGitHub": [
+      "names, ages or birthdates of individual children",
+      "parent or guardian identities, phone numbers and custody or pickup arrangements",
+      "health, allergy, disability or emergency details",
+      "background check records, addresses or identifying details of volunteer candidates"
+    ],
+    "privateProcessOwner": "Authorized church child-safety lead and parents or guardians, not nuThang"
+  },
+  "safetyGates": [
+    "Authorized Riverside/FELLOWSHIP host decides whether any care will be offered and determines applicable Minnesota licensing requirements",
+    "Host selects, screens and approves caregivers under a written safeguarding policy, including a two-adult practice where applicable",
+    "Host checks age-appropriate staffing capacity and the suitability of the designated space",
+    "Host establishes parent or guardian authorization, attendance and release procedures, emergency response and escalation",
+    "Host determines precise hours and communicates what care is or is not available",
+    "Actual adult caregivers explicitly accept the specific commitment; public interest is never automatic assignment"
+  ],
+  "fallback": "Until host-authorized, properly staffed childcare is confirmed, do not advertise childcare as available. Children remain in the care of their parent or legal guardian; explore parent-accompanied participation or a guardian-supported family area only with host agreement.",
+  "nextPublicStep": "Ask the authorized Riverside event/children's-ministry lead whether the church can approve a safe program for a defined portion of December 4; request private age/count planning through the host, not via a public form.",
+  "doesNotClaim": [
+    "a childcare provider is available",
+    "any person is screened, trained, licensed, cleared, assigned, or volunteering",
+    "host authorization, guardian consent, or legal exemption",
+    "any child's attendance, safety or identity",
+    "any real-world care has occurred"
+  ]
+}
