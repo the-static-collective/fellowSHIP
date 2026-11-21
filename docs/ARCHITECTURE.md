@@ -2,7 +2,7 @@
 
 ## What is implemented
 
-Commons 001 has exactly one authority for collaborative state: a dedicated Supabase Postgres database. The browser uses the public Supabase client, with email magic-link authentication and **RLS** deciding who can read or write every exposed record.
+Commons 001 has exactly one authority for collaborative state: a dedicated Neon Postgres database. The browser uses Neon's public Data API and managed Better Auth, with email/password authentication and **RLS** deciding who can read or write every exposed record.
 
 ### Data model
 
@@ -36,8 +36,8 @@ The DB uses narrow `private` SECURITY DEFINER **read helpers** so room and membe
 4. A task event's actor is inferred from `auth.uid()`, never a client-supplied actor field.
 5. Only a room's creator may change its collaborators.
 6. A request to read an unrelated church's room must return no rows under that user's credentials.
-7. No authorization decision trusts frontend state or user-editable JWT metadata.
-8. Neither Supabase secret keys nor Suno/R2 tokens belong in frontend source.
+7. No authorization decision trusts frontend state or user-editable JWT metadata. Neon Auth's signed `sub` claim is obtained via the Data API's `auth.uid()` function.
+8. Neither Neon Postgres role passwords nor Suno/R2 tokens belong in frontend source.
 9. All cross-organization work requires an explicit person-level room grant.
 10. A claim of rights, editorial clearance or approval is **not** inferred from a generated media file.
 
