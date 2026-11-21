@@ -4,7 +4,7 @@
 
 This repository holds the [living vision](VISION.md) and the first independently deployable code slice: **Commons 001**. The first two slices form a small shared workspace, **not** a deployed radio network or a finished multi-tenant platform.
 
-## What Commons 001 does
+## What Commons 001–002 does
 
 - Neon managed email/password sign-in with required email-code verification. Each contributor has their **own** account.
 - Found a community (e.g. a congregation or cooperative group).
@@ -31,7 +31,7 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 
 ## Test the two-person pilot
 
-1. Serve the branch over HTTP(S), or publish through GitHub Pages. For local development, run `python3 -m http.server 8000` and browse `http://localhost:8000`. **Do not run directly from file://.**
+1. Open `https://fellowship.abundent.org` after its HTTPS certificate is active. For local development, run `python3 -m http.server 8000` and browse `http://localhost:8000`. **Do not run directly from file://.**
 2. Create an account with your name, email and password; check your mailbox for a one-time code and enter it in **Verify your email address**. You can sign in using the same credentials later.
 3. Create a community such as "Real Life Church", then create a room such as "Friday Supper".
 4. Create a task and update its status.
@@ -42,9 +42,18 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 
 **Deployment state:** The isolated database is provisioned and its structural privileges have been checked. End-to-end browser, email, and adversarial multi-account access testing is **not yet complete**. Keep out confidential pastoral, financial, and children's information. Full testing instructions: [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
-## Protected Vercel pilot\n\nA static copy of the current draft branch is deployed as \`fellowship-commons-preview\` on the existing Vercel Hobby team. The alias \`https://fellowship-commons-preview.vercel.app\` is **protected by Vercel Authentication**. External testers need the temporary, private share-access URL supplied by the project owner. **Never commit the share token or an unredeemed room invite token.** Open the Vercel access link once in the same browser before opening a separate room invitation link. Vercel labels the deployment target \`production\`, but it remains a protected pilot, not a production-approved church system.\n\nHTML, JS and CSS return HTTP 200; full authenticated browser collaboration is not yet verified.\n\n## Publishing to GitHub Pages
+## Hosting: GitHub Pages + Abundent (2026-11-21)
 
-After the draft PR has passed checks and been merged, enable **Settings → Pages** for the repository and publish `main`/`root`. The Neon Auth redirect allowlist already includes `https://the-static-collective.github.io`. Verify the actual deployment URL, CORS behavior, and browser authentication before inviting anyone.
+**GitHub Pages is now configured and the Pages deployment completed successfully.** The publishing source is the standalone `gh-pages` branch, with exactly `index.html`, `styles.css`, `app.js`, `CNAME`, and `.nojekyll`. It is a snapshot of the code in the draft feature branch, not a release of the whole repository.
+
+- Preferred site: **https://fellowship.abundent.org** (GitHub Pages reports this custom domain; HTTPS certificate issuance/client reachability not yet independently verified).
+- Cloudflare's authoritative DNS has a DNS-only CNAME: `fellowship.abundent.org` → `the-static-collective.github.io`.
+- GitHub Pages deployment: [successful Actions run](https://github.com/the-static-collective/fellowSHIP/actions/runs/44922316209).
+- Neon Auth now trusts `https://fellowship.abundent.org`; the existing backend and database were not migrated.
+- The old Vercel pilot remains temporarily available as a fallback. **Do not send its old share link as the primary URL.** Retire it after HTTPS, sign-in, invite redemption and cross-account permissions work on the new site.
+- The draft PR remains unmerged; no confidential church data should be entered during the pilot.
+
+See [docs/HOSTING.md](docs/HOSTING.md) for deployment/update/rollback instructions. Because `gh-pages` is currently a static publishing branch, future changes in the draft PR do **not** automatically update the live site: republish the reviewed three frontend files deliberately.
 
 ## Architectural boundary
 
