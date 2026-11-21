@@ -6,42 +6,45 @@ This repository holds the [living vision](VISION.md) and the first independently
 
 ## What Commons 001 does
 
-- Email magic-link sign-in. Each contributor has their **own** account.
+- Neon managed email/password sign-in. Each contributor has their **own** account.
 - Found a community (e.g. a congregation or cooperative group).
 - Create project rooms associated with that community.
 - Add collaborators **from any church/account** to a room as viewer or editor.
 - Create tasks, change their status, and read the durable activity history.
 - Access the same tasks from distinct accounts and devices. The **database** is the shared source of truth, not a ChatGPT conversation.
-- Authenticate and authorize writes with Postgres row-level security, not frontend UI logic.
+- Authenticate with Neon Auth and authorize writes with Postgres row-level security, not frontend UI logic.
 
 There is deliberately **no service-role secret in the app**, no public searchable member directory, and no need for participants to install or subscribe to an AI product.
 
-## Run a two-person pilot
+## Neon backend (provisioned 2026-11-21)
 
-> IMPORTANT: Use a **new, dedicated Supabase project**. Do not execute the bootstrap SQL against an existing pantry, church operations, or production database. Nothing in this repository provisions a Supabase project or modifies existing data.
+The project now has an isolated **Neon Free** backend under the **the static** Neon organization:
 
-1. Create a dedicated [Supabase](https://supabase.com/) project. Review the displayed plan/cost before creation.
-2. In the project's SQL editor, run [db/schema.sql](db/schema.sql) **once**. It creates the new tables, permissions, RLS policies, task-logging triggers, and private read-only authorization helpers. It is not an idempotent migration runner.
-3. In Supabase **Authentication → URL Configuration**, add your local test address (for example `http://localhost:8000`) to **Redirect URLs**. For a published site, add its exact HTTPS URL too. Configure email OTP/magic-link delivery (production use requires email deliverability planning).
-4. Serve the repository over HTTP, for example:
+- Project: `fellowSHIP Commons` (`long-mode-35200070`), `aws-us-east-1`
+- Main branch: `br-dawn-cherry-bbnlokf9`
+- Database: `fellowship`
+- Managed Better Auth and the Neon Data API are provisioned.
+- Tables, scoped read helpers, and RLS are installed from [db/neon-schema.sql](db/neon-schema.sql).
+- No Supabase project was altered; [db/schema.sql](db/schema.sql) is retained only as a **Supabase reference**, and **must not** be applied to the Neon project.
 
-   ```sh
-   python3 -m http.server 8000
-   ```
+The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it does not contain a privileged database role password or API secret. Its dependency is pinned to a published Neon SDK release imported through a third-party ESM CDN. For more reliable production distribution, bundle and self-host the dependency after browser verification.
 
-   Open `http://localhost:8000`. A file:// URL is not supported for reliable auth callbacks.
-5. Paste the project's **Project URL** and **publishable** (`sb_publishable_...`) key into the Connect screen. A legacy **anon** key is also accepted. **Never enter a service_role or secret key.** The public connection settings are stored in browser localStorage.
-6. Sign in with a valid email, then create a community and room.
-7. A second person signs in separately, copies their full **Member ID**, and sends it privately to the room owner. The owner opens that room and grants editor or viewer access to the exact ID.
-8. The second person hits **Refresh shared work**. They can read the room and, if an editor, create/update tasks. Both can see the activity history. The owner can then edit their role or revoke access using the room's people controls.
+## Test the two-person pilot
 
-For full checks, including isolation and deliberate denial tests, see [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
+1. Serve the branch over HTTP(S), or publish through GitHub Pages. For local development, run `python3 -m http.server 8000` and browse `http://localhost:8000`. **Do not run directly from file://.**
+2. Create an account with your name, email, and password. Neon managed Auth uses independent accounts; the UI also supports signing in with an existing account.
+3. Create a community such as "Real Life Church", then create a room such as "Friday Supper".
+4. Create a task and update its status.
+5. A second person creates their own account and copies their full member ID from the workspace, sharing that UUID privately with the room owner.
+6. The room owner grants viewer or editor access. The second person selects **Refresh shared work** to fetch changes.
+7. Verify that the second person can see the authorized room and its history but cannot access an unrelated room.
+8. The room owner can change or revoke membership from the **People in this room** controls.
 
-## Run on GitHub Pages (after review)
+**Deployment state:** The isolated database is provisioned and its structural privileges have been checked. End-to-end browser, email, and adversarial multi-account access testing is **not yet complete**. Keep out confidential pastoral, financial, and children's information. Full testing instructions: [docs/TEST_PLAN.md](docs/TEST_PLAN.md).
 
-This is a **zero-build** HTML/CSS/JavaScript application. Once the branch is reviewed and merged, an administrator can enable **Settings → Pages → Deploy from branch → main / (root)**. Then add the published HTTPS URL to Supabase Auth Redirect URLs. Until this is configured and the Supabase schema is installed, there is no working hosted service.
+## Publishing to GitHub Pages
 
-The browser loads a **pinned** Supabase SDK (`2.119.2`) from jsDelivr. For production, bundle/self-host a verified dependency rather than relying solely on a third-party CDN. Offline use is not implemented.
+After the draft PR has passed checks and been merged, enable **Settings → Pages** for the repository and publish `main`/`root`. The Neon Auth redirect allowlist already includes `https://the-static-collective.github.io`. Verify the actual deployment URL, CORS behavior, and browser authentication before inviting anyone.
 
 ## Architectural boundary
 
@@ -51,7 +54,7 @@ Browser / human                          Future: ChatGPT or other AI
       +-------------------+---------------------------+
                           |
                  Authorized service API
-                 (Supabase Auth / PostgREST)
+                 (Neon Auth / Data API)
                           |
                   Postgres + enforced RLS
      communities → rooms → memberships / tasks / activity
@@ -61,7 +64,7 @@ Browser / human                          Future: ChatGPT or other AI
     Future: Suno / human audio → review → R2 → playout engine
 ```
 
-- `db/schema.sql`: current durable source of truth and row-level permissions.
+- `db/neon-schema.sql`: current Neon data model and row-level permissions. `db/schema.sql` is the superseded Supabase-specific reference.
 - `index.html`, `styles.css`, `app.js`: browser-only pilot.
 - `docs/ARCHITECTURE.md`: ownership, access model, and extension boundaries.
 - `docs/TEST_PLAN.md`: repeatable multi-account acceptance and security tests.
@@ -84,7 +87,7 @@ node --check app.js
 python3 -m http.server 8000
 ```
 
-SQL has not been applied to a live project by this repository commit. Follow the multi-account acceptance plan before real-world church use.
+The isolated Neon schema has been applied and structurally inspected. Real browser login and multi-account denial tests remain required before real-world church use.
 
 ## Guiding principle
 
