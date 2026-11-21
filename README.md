@@ -24,7 +24,7 @@ The project now has an isolated **Neon Free** backend under the **the static** N
 - Main branch: `br-dawn-cherry-bbnlokf9`
 - Database: `fellowship`
 - Managed Better Auth and the Neon Data API are provisioned.
-- Base tables and RLS are in [db/neon-schema.sql](db/neon-schema.sql); secure invitations in [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins in [db/003_room_checkins.sql](db/003_room_checkins.sql); verified-email redemption in [db/004_verified_invites.sql](db/004_verified_invites.sql); guarded room creation in [db/005_create_room_rpc.sql](db/005_create_room_rpc.sql). All have been applied to the dedicated Neon project. Do not rerun them.
+- Base tables and RLS are in [db/neon-schema.sql](db/neon-schema.sql); secure invitations in [db/002_room_invites.sql](db/002_room_invites.sql); durable check-ins in [db/003_room_checkins.sql](db/003_room_checkins.sql); verified-email redemption in [db/004_verified_invites.sql](db/004_verified_invites.sql); guarded room creation in [db/005_create_room_rpc.sql](db/005_create_room_rpc.sql). Server-side email authorization is in [db/006_email_delivery.sql](db/006_email_delivery.sql). All have been applied to the dedicated Neon project. Do not rerun them.
 - No Supabase project was altered; [db/schema.sql](db/schema.sql) is retained only as a **Supabase reference**, and **must not** be applied to the Neon project.
 
 The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it does not contain a privileged database role password or API secret. Its dependency is pinned to a published Neon SDK release imported through a third-party ESM CDN. For more reliable production distribution, bundle and self-host the dependency after browser verification.
@@ -81,7 +81,7 @@ Browser / human                          Future: ChatGPT or other AI
 
 ## Current deliberate limits
 
-- **Invitations use hashed 256-bit tokens** and expire after 48 hours; optionally restrict redemption to a matching verified email. The browser can prepare a fully addressed Gmail or system email draft without manual copy/paste, but does not auto-send the message. See [email delivery plan](docs/EMAIL_DELIVERY.md). Revocation only applies before it is redeemed.
+- **Invitations use hashed 256-bit tokens** and expire after 48 hours; optionally restrict redemption to a matching verified email. A ready-to-send Gmail/system email draft needs no copy/paste. The **Send invitation email** action will activate automatically after the separate Neon Function `sendinvite` is configured with a verified Resend sender key; currently it is **disabled**, so no automatic emails are sent. See [email delivery and setup](docs/EMAIL_DELIVERY.md). Revocation only applies before a link is redeemed.
 - **Only a community's founder can create its rooms.** Additional organization-level administrators, transfer of ownership, room archiving, and community-wide role management are future features.
 - **No real-time push.** Refresh explicitly to pull the latest state; no automatic polling or websocket subscriptions. The cross-device catch-up view currently summarizes the latest 40 recorded task events, not every possible event in a busy room.
 - **No editing project metadata, task deletion, or event deletion.** An append-only task activity log records author IDs, titles, and status changes; history itself is never writable from the browser.
