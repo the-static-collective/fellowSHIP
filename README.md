@@ -35,7 +35,7 @@ The browser client uses **public HTTPS API endpoints** hardcoded in `app.js`; it
 2. Create an account with your name, email and password; check your mailbox for a one-time code and enter it in **Verify your email address**. You can sign in using the same credentials later.
 3. Create a community such as "Real Life Church", then create a room such as "Friday Supper". Room creation uses an owner-checked RPC and displays progress or server errors directly under the button.
 4. Create a task and update its status.
-5. The room owner selects **Create private invitation**, selects viewer or editor, and preferably enters the recipient’s email. **Copy invitation link** and send it privately (never publish it in a general chat).
+5. The room owner enters the recipient's email, chooses a viewer/editor role and clicks **Prepare email invitation**. Then clicks **Open Gmail draft** or **Open email app**; the complete invite URL is already included in a ready-to-send message. The owner reviews and presses **Send** in the mail client. To send a text instead, choose **Create link instead** and copy/share the private link. **Automatic server-side email sending is not yet configured.**
 6. The second person opens the link, creates or signs into their own account, and clicks **Accept invitation**. The invited room becomes available; use **Refresh shared work** to fetch new changes.
 7. Verify that the second person can see the authorized room and its history but cannot access an unrelated room.
 8. The room owner can revoke unused links or change/revoke membership from the room controls. Each person can review **Since your last check-in** and click **Mark caught up**; the checkpoint is stored per account, not just in the browser.
@@ -81,7 +81,7 @@ Browser / human                          Future: ChatGPT or other AI
 
 ## Current deliberate limits
 
-- **Invitations use hashed 256-bit tokens** and expire after 48 hours; optionally restrict the redemption to a specific signed-in email. There is no automatic email delivery—send the link privately. Revocation only applies before it is redeemed.
+- **Invitations use hashed 256-bit tokens** and expire after 48 hours; optionally restrict redemption to a matching verified email. The browser can prepare a fully addressed Gmail or system email draft without manual copy/paste, but does not auto-send the message. See [email delivery plan](docs/EMAIL_DELIVERY.md). Revocation only applies before it is redeemed.
 - **Only a community's founder can create its rooms.** Additional organization-level administrators, transfer of ownership, room archiving, and community-wide role management are future features.
 - **No real-time push.** Refresh explicitly to pull the latest state; no automatic polling or websocket subscriptions. The cross-device catch-up view currently summarizes the latest 40 recorded task events, not every possible event in a busy room.
 - **No editing project metadata, task deletion, or event deletion.** An append-only task activity log records author IDs, titles, and status changes; history itself is never writable from the browser.
