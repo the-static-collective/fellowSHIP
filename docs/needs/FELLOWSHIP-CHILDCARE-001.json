@@ -60,14 +60,30 @@
       "kind": "neighbor_church_possible_referral",
       "officialUrl": "https://www.lakenokomischurch.org/worship.html",
       "evidence": "Church describes childcare upon request; ask only for advice or a possible voluntary referral, not presumed personnel availability",
-      "state": "DISCOVERY_LEAD_NOT_OFFER"
+      "state": "REFERRAL_REQUEST_SENT_REPLY_PENDING",
+      "outreachNote": "A childcare referral inquiry was sent to the church's general contact on 2026-11-21; no specific caregiver has offered or been confirmed."
     },
     {
       "name": "Trinity Lutheran of Minnehaha Falls",
       "kind": "neighbor_church_possible_referral",
       "officialUrl": "https://www.trinityfalls.org/visit",
       "evidence": "Church publishes regular-service nursery arrangements; ask for advice or vetted referrals, not presumed event care",
-      "state": "DISCOVERY_LEAD_NOT_OFFER"
+      "state": "REFERRAL_REQUEST_SENT_REPLY_PENDING",
+      "outreachNote": "A childcare referral inquiry was sent to the church on 2026-11-21; no specific caregiver has offered or been confirmed."
+    },
+    {
+      "name": "Trinity Falls Discovery Center / Lake Area Discovery Center",
+      "kind": "licensed_early_childhood_program_possible_referral",
+      "officialUrl": "https://ladcfamilies.org/locations/trinity-lutheran-church-of-minnehaha-falls-minneapolis/",
+      "evidence": "Licensed childcare program at Trinity Lutheran with its own professional staff. This is a referral inquiry, not a claim its employees are available for offsite evening care.",
+      "state": "DISCOVERY_LEAD_NOT_CONTACTED_NOT_OFFER"
+    },
+    {
+      "name": "Hiawatha Church — kids ministry",
+      "kind": "neighbor_church_possible_referral",
+      "officialUrl": "https://www.hiawathachurch.com/kids-and-youth",
+      "evidence": "Nearby church publicly offers age-divided children's ministry; may know experienced adult caregivers, but no outside care has been offered.",
+      "state": "DISCOVERY_LEAD_NOT_CONTACTED_NOT_OFFER"
     }
   ],
   "hostApproval": "NOT_RECORDED",
@@ -97,7 +113,7 @@
     "Actual adult caregivers explicitly accept the specific commitment; public interest is never automatic assignment"
   ],
   "fallback": "Until host-authorized, properly staffed childcare is confirmed, do not advertise childcare as available. Children remain in the care of their parent or legal guardian; explore parent-accompanied participation or a guardian-supported family area only with host agreement.",
-  "nextPublicStep": "Pursue two parallel tracks: (A) ask external event/church childcare providers for possible date, coverage, screening and low-cost or donated staffing, without claiming availability; (B) ask the authorized Riverside event host whether an appropriate room, insurance and safeguarding approval can be provided. Do not assume an in-house childcare lead exists.",
+  "nextPublicStep": "First, follow up with the two already-sent external childcare referral requests (Lake Nokomis Lutheran and Trinity Lutheran) and seek specific willing, suitable adult caregivers; also request paid event-childcare quotes or referrals from Jovie and local professional providers. Separately, ask the authorized Riverside event host whether a suitable space, safeguarding/insurance approval, and lawful arrangement can be provided. Do not assume an in-house childcare team exists.",
   "doesNotClaim": [
     "a childcare provider is available",
     "any person is screened, trained, licensed, cleared, assigned, or volunteering",
