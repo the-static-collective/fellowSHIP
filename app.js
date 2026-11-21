@@ -84,7 +84,10 @@ async function refreshSession() {
 function displaySession() {
   $("auth-panel").hidden = Boolean(user);
   $("workspace").hidden = !user;
-  if (user) $("member-id").textContent = user.id;
+  if (user) {
+    $("member-id").textContent = user.id;
+    $("verify-email-panel").hidden = true;
+  }
   displayInvitation();
 }
 
@@ -360,8 +363,25 @@ function bindForms() {
       });
       if (error) throw error;
       $("signup-password").value = "";
+      $("verify-email").value = cleanInput("signup-email");
+      $("verify-email-panel").hidden = false;
       await refreshSession();
-      notice("Account created. Sign in if your session is not yet active.");
+      if (!user) notice("Account created · check your email for a verification code");
+    
+    });
+  });
+  $("verify-email-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    action(async () => {
+      const { error } = await db.auth.emailOtp.verifyEmail({
+        email: cleanInput("verify-email"),
+        otp: cleanInput("verify-code")
+      });
+      if (error) throw error;
+      $("verify-code").value = "";
+      $("verify-email-panel").hidden = true;
+      await refreshSession();
+      notice(user ? "Email verified · welcome to fellowSHIP" : "Email verified · sign in to continue");
     });
   });
   $("community-form").addEventListener("submit", (e) => {
