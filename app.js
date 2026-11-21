@@ -6,6 +6,8 @@ import { createClient } from "https://esm.sh/@neondatabase/neon-js@0.9.0-beta";
 const $ = (id) => document.getElementById(id);
 const NEON_AUTH_URL = "https://ep-broad-waterfall-bbq2rh82.neonauth.c-15.us-east-1.aws.neon.tech/fellowship/auth";
 const NEON_DATA_URL = "https://ep-broad-waterfall-bbq2rh82.apirest.c-15.us-east-1.aws.neon.tech/fellowship/rest/v1";
+const INVITE_EMAIL_SERVICE_URL = "https://br-dawn-cherry-bbnlokf9-sendinvite.compute.c-15.us-east-1.aws.neon.tech/";
+let directInviteEmailReady = false;
 let db = null;
 let user = null;
 let communities = [];
@@ -100,6 +102,41 @@ function owns(room) { return user && room.created_by === user.id; }
 async function connect() {
   db = createClient({ auth: { url: NEON_AUTH_URL }, dataApi: { url: NEON_DATA_URL } });
   await refreshSession();
+  void detectDirectEmail();
+}
+
+async function detectDirectEmail() {
+  try {
+    const response = await fetch(INVITE_EMAIL_SERVICE_URL, { headers: { accept: "application/json" } });
+    if (response.ok) directInviteEmailReady = (await response.json()).ready === true;
+  } catch {
+    directInviteEmailReady = false;
+  }
+  $("prepare-email-invite").textContent = directInviteEmailReady
+    ? "Send invitation email" : "Prepare email invitation";
+  $("direct-email-hint").textContent = directInviteEmailReady
+    ? "Email invitations are sent directly. A prepared draft remains available if sending fails."
+    : "The email draft opens in Gmail or your mail app with the entire link; press Send. Automatic sending is not yet configured.";
+}
+
+async function sendInviteEmailThroughService(token) {
+  const { data, error } = await db.auth.getSession();
+  if (error) throw error;
+  const jwt = data?.session?.token;
+  if (!jwt) throw new Error("Sign in again to send an email.");
+  const response = await fetch(INVITE_EMAIL_SERVICE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + jwt
+    },
+    body: JSON.stringify({ token })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.sent !== true) {
+    throw new Error(result.error || "The email service did not confirm sending.");
+  }
+  return result;
 }
 
 async function refreshSession() {
@@ -508,8 +545,25 @@ function bindForms() {
         $("invite-created-message").textContent = "Private link ready. Copy or share it with the intended person.";
         feedback.textContent = "Private invitation link created.";
       }
-      await loadRoom();
-      notice("Invitation ready · " + (linkOnly ? "copy the link" : "open a preaddressed email draft"));
+      let sent = false;
+      if (!linkOnly && email && directInviteEmailReady) {
+        feedback.textContent = "Sending the email invitation…";
+        try {
+          const result = await sendInviteEmailThroughService(data);
+          sent = true;
+          feedback.textContent = "Email accepted for sending to " + result.recipient + ".";
+          $("invite-created-message").textContent =
+            "Email accepted by the sending service. The private draft remains as backup.";
+        } catch (deliveryError) {
+          console.error("Automatic email could not be sent", deliveryError);
+          feedback.dataset.error = "true";
+          feedback.textContent = "Email was not confirmed: " + errorMessage(deliveryError)
+            + " Use the draft links below to send it manually.";
+        }
+      }
+      try { await loadRoom(); } catch (refreshError) { console.warn("Invitation list refresh failed", refreshError); }
+      if (sent) notice("Invitation email accepted for sending");
+      else notice("Invitation ready · " + (linkOnly ? "copy the link" : "open a preaddressed email draft"));
     } catch(error) {
       console.error("Invitation creation failed", error);
       feedback.dataset.error = "true";
