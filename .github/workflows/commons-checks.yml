@@ -1,0 +1,68 @@
+name: Commons static checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse JavaScript
+        run: node --check app.js
+      - name: Parse secure email sender
+        run: node --check functions/sendinvite/index.mjs
+      - name: Verify complete email draft links
+        run: node --test tests/invitation_email.test.mjs
+      - name: Inspect HTML elements and SQL RLS declarations
+        run: |
+          python3 - <<'PY'
+          import re
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class IDs(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids = []
+              def handle_starttag(self, tag, attrs):
+                  self.ids.extend(v for k, v in attrs if k == "id")
+          html = Path('index.html').read_text()
+          js = Path('app.js').read_text()
+          sql = Path('db/neon-schema.sql').read_text().lower()
+          invites = Path('db/002_room_invites.sql').read_text().lower()
+          checkins = Path('db/003_room_checkins.sql').read_text().lower()
+          verified = Path('db/004_verified_invites.sql').read_text().lower()
+          room_rpc = Path('db/005_create_room_rpc.sql').read_text().lower()
+          email_rpc = Path('db/006_email_delivery.sql').read_text().lower()
+          p = IDs()
+          p.feed(html)
+          assert len(p.ids) == len(set(p.ids)), 'Duplicate element ID'
+          referenced = set(re.findall(r'\$\("([^"]+)"\)', js))
+          missing = referenced - set(p.ids)
+          assert not missing, f'JS references missing HTML IDs: {missing}'
+          for table in ['communities', 'rooms', 'room_members', 'tasks', 'activity']:
+              assert f'alter table public.{table} enable row level security;' in sql
+          assert 'alter table public.room_invites enable row level security;' in invites
+          assert 'alter table public.room_checkins enable row level security;' in checkins
+          assert 'revoke all on public.room_invites from public, anonymous, authenticated' in invites
+          assert 'create function public.redeem_room_invite' in invites
+          assert 'public.digest(p_token' in invites and 'public.gen_random_bytes(32)' in invites
+          assert 'private.room_can_read(room_id)' in checkins
+          assert '"emailverified" is true' in verified
+          assert 'auth.emailOtp.verifyEmail' in js
+          assert 'create function public.create_fellowship_room' in room_rpc
+          assert 'c.created_by = actor' in room_rpc
+          assert 'public.create_fellowship_room(uuid,text) to authenticated' in room_rpc
+          assert 'db.rpc("create_fellowship_room"' in js
+          assert 'create function public.reserve_room_invite_email' in email_rpc
+          assert 'i.invited_by = me' in email_rpc
+          assert 'last_email_attempt_at' in email_rpc
+          assert 'grant execute on function public.reserve_room_invite_email(text) to authenticated' in email_rpc
+          assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'
+          assert 'neon_auth' in sql, 'Expected Neon identity schema'
+          print(f'Checked {len(referenced)} JS element references and seven RLS tables.')
+          PY

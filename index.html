@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132f2a">
+  <meta name="description" content="fellowSHIP: a digital commons for churches to make things together.">
+  <title>fellowSHIP | The Commons</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Pinned ESM package for this isolated Neon pilot. Future production: bundle and self-host. -->
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark">fS</span><div><strong>fellow<span>SHIP</span></strong><small>the shared makerspace</small></div></div>
+    <div class="header-right"><span id="status" class="status" aria-live="polite">Ready to connect</span></div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">THE COMMONS · PILOT 002</div>
+      <h1>Make something good, <em>together.</em></h1>
+      <p>Independent people. Shared work. One durable place for a church's ideas, projects, tasks, and handoffs.</p>
+    </section>
+
+    <section id="pending-invite-panel" class="panel invite-panel" hidden>
+      <h2>A room invitation is waiting</h2>
+      <p id="pending-invite-message" class="muted">Sign in or create an account to accept this private invitation.</p>
+      <div class="inline-form">
+        <button id="accept-room-invite" class="primary" type="button" disabled>Accept invitation</button>
+        <button id="dismiss-room-invite" type="button" class="quiet">Dismiss</button>
+      </div>
+    </section>
+
+    <section id="auth-panel" class="panel auth-panel">
+      <h2>Enter the Commons</h2>
+      <p class="muted">Use an individual church or personal account. Projects are visible only after someone grants you access.</p>
+      <div class="auth-grid">
+        <form id="login-form" class="stack">
+          <h3>Sign in</h3>
+          <label>Email<input id="login-email" type="email" autocomplete="email" required></label>
+          <label>Password<input id="login-password" type="password" autocomplete="current-password" minlength="8" required></label>
+          <button class="primary" type="submit">Sign in</button>
+        </form>
+        <form id="signup-form" class="stack">
+          <h3>Create an account</h3>
+          <label>Your name<input id="signup-name" type="text" autocomplete="name" maxlength="100" required></label>
+          <label>Email<input id="signup-email" type="email" autocomplete="email" required></label>
+          <label>Password (at least 8 characters)<input id="signup-password" type="password" autocomplete="new-password" minlength="8" required></label>
+          <button type="submit">Join fellowSHIP</button>
+        </form>
+      </div>
+      <section id="verify-email-panel" class="verify-panel" hidden>
+        <h3>Verify your email address</h3>
+        <p class="muted small">Enter the one-time code Neon sent to your mailbox. A targeted invitation cannot be redeemed until this address is verified.</p>
+        <form id="verify-email-form" class="stack">
+          <label>Email<input id="verify-email" type="email" autocomplete="email" required></label>
+          <label>Verification code<input id="verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Code from email" required></label>
+          <button class="primary" type="submit">Verify and continue</button>
+        </form>
+      </section>
+      <p class="note">This pilot uses Neon's managed authentication. A church account does not grant access to confidential rooms; each invitation is explicit. Do not upload confidential pastoral, financial, or children's information during pilot testing.</p>
+    </section>
+
+    <section id="workspace" hidden>
+      <div class="welcome">
+        <div><h2>Your shared workspace</h2><p class="muted">You see only your communities and the rooms you've been invited to.</p></div>
+        <div class="identity"><span>Your member ID</span><button id="copy-id" class="copy-id" type="button" title="Copy your account ID"><code id="member-id">—</code><span>Copy</span></button><button id="sign-out" type="button" class="quiet">Sign out</button></div>
+      </div>
+
+      <div class="workspace-grid">
+        <section class="panel">
+          <div class="panel-top"><h3>Communities</h3><span class="chip">Local identity</span></div>
+          <ul id="community-list" class="plain-list"></ul>
+          <form id="community-form" class="stack separated">
+            <label>Start a community<input id="community-name" type="text" maxlength="100" placeholder="e.g. Real Life Church" required></label>
+            <button type="submit">Create community</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-top"><h3>Project rooms</h3><span class="chip">Shared work</span></div>
+          <ul id="room-list" class="room-list plain-list"></ul>
+          <form id="room-form" class="stack separated">
+            <label>Community<select id="room-community" required></select></label>
+            <label>New room<input id="room-name" type="text" maxlength="100" placeholder="e.g. Friday supper" required></label>
+            <button id="create-room" type="submit">Create room</button>
+            <p id="room-feedback" class="room-feedback" role="status" aria-live="polite" hidden></p>
+          </form>
+          <button id="refresh" class="quiet full" type="button">Refresh shared work</button>
+        </section>
+
+        <section class="panel detail-panel" aria-label="Selected project room">
+          <div id="room-empty" class="empty">
+            <span class="empty-symbol">✳</span><h3>Find your room</h3>
+            <p>Choose a project to see its tasks and history. Projects can include people from different churches.</p>
+          </div>
+          <div id="room-detail" hidden>
+            <div class="panel-top"><div><div class="eyebrow" id="room-parent">COMMUNITY</div><h3 id="room-title">Room</h3></div><span id="room-role" class="chip">Participant</span></div>
+            <p id="room-description" class="muted"></p>
+            <section class="catchup-panel" id="catchup-panel">
+              <div class="panel-top"><h4>Since your last check-in</h4><span class="chip">Catch up</span></div>
+              <p id="catchup-summary" class="muted">Loading your activity recap…</p>
+              <ul id="catchup-list" class="plain-list compact-list"></ul>
+              <button id="mark-caught-up" type="button" class="quiet">Mark caught up</button>
+            </section>
+            <div class="section-heading"><h4>Tasks</h4><span id="task-count" class="muted"></span></div>
+            <ul id="task-list" class="plain-list task-list"></ul>
+            <form id="task-form" class="stack separated">
+              <label>New task<input id="task-title" type="text" maxlength="200" placeholder="What should be done?" required></label>
+              <label>Details (optional)<textarea id="task-details" maxlength="5000" rows="2" placeholder="What does done look like?"></textarea></label>
+              <button type="submit">Add task</button>
+            </form>
+            <div class="section-heading"><h4>People in this room</h4></div>
+            <ul id="members-list" class="plain-list compact-list"></ul>
+            <section id="invite-tools" class="separated" hidden>
+              <h4>Invite someone to this room</h4>
+              <p class="muted small">Issue one private link that expires in 48 hours. Optionally restrict it to the recipient's email. Links are single-use.</p>
+              <p id="direct-email-hint" class="muted small">Your email app can send a ready-to-send invitation without copying. Automatic delivery is not yet configured.</p>
+              <form id="invite-form" class="stack">
+                <label>Recipient email (to prepare an email)<input id="invite-email" type="email" autocomplete="off" placeholder="collaborator@example.org"></label>
+                <label>Room access<select id="invite-role"><option value="editor">Editor — can contribute tasks</option><option value="viewer">Viewer — read only</option></select></label>
+                <button id="prepare-email-invite" class="primary" type="submit">Prepare email invitation</button>
+                <button id="create-link-only" type="button" class="quiet">Create link instead</button>
+              </form>
+              <p id="invite-feedback" class="room-feedback" role="status" aria-live="polite" hidden></p>
+              <div id="generated-invite" class="stack invite-generated" hidden>
+                <p id="invite-created-message" class="muted small" role="status" aria-live="polite">Your private invitation is ready.</p>
+                <div id="invite-email-options" class="invite-email-options" hidden>
+                  <a id="open-gmail-invite" class="draft-link" href="#" target="_blank" rel="noopener noreferrer">Open Gmail draft</a>
+                  <a id="open-mailto-invite" class="draft-link" href="#">Open email app</a>
+                  <p class="muted small">A preaddressed draft opens with the entire link. Review it and press Send in your email service.</p>
+                </div>
+                <label>Invitation link (manual fallback)<input id="invite-link" type="text" readonly></label>
+                <button id="copy-invite-link" type="button">Copy invitation link</button>
+                <p class="muted small">Keep this link private. It is valid for one person and expires in 48 hours.</p>
+              </div>
+              <div class="section-heading"><h4>Recent invitations</h4></div>
+              <ul id="invite-list" class="plain-list compact-list"></ul>
+            </section>
+            <div class="section-heading"><h4>Activity history</h4><span class="muted">Recorded by the database</span></div>
+            <ul id="activity-list" class="plain-list activity-list"></ul>
+          </div>
+        </section>
+      </div>
+      <p class="footer-note">fellowSHIP Commons 002 · Independent accounts · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
+    </section>
+  </main>
+</body>
+</html>
