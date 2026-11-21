@@ -1,6 +1,6 @@
 # Neon Commons 001 — Provisioning and validation receipt
 
-**2026-11-21 | State:** Provisioned backend, browser pilot pending full end-to-end test.
+**2026-11-21 | State:** Protected Vercel test site READY; Neon backend provisioned; real multi-account browser security test pending.
 
 ## Live backend (safe metadata)
 
@@ -15,25 +15,25 @@
 
 ## Installed schema
 
-Applied `db/neon-schema.sql` to the new database, containing five RLS-protected application tables:
-`communities`, `rooms`, `room_members`, `tasks`, and `activity`.
+`db/neon-schema.sql` plus additive migrations `002_room_invites.sql`, `003_room_checkins.sql`, and `004_verified_invites.sql` have been applied. Seven RLS-protected application tables now exist:
+`communities`, `rooms`, `room_members`, `tasks`, `activity`, `room_invites`, and `room_checkins`. The invitation table has no direct authenticated/anonymous table grants; four invitation RPCs require authenticated calls and per-room authorization. Email-restricted invites require a verified Neon Auth email.
 
 **Provider-specific fix:** Neon's restricted `authenticated` database role cannot directly access its managed `auth` schema. A narrow `private.current_uid()` SECURITY DEFINER helper returns only the authenticated JWT subject through Neon's `auth.uid()`. The helper has no arbitrary user-ID input and the `private` schema is not exposed to the Data API. Policies use this helper instead of directly invoking `auth.uid()`. The deployed database was patched to match the tracked Neon schema.
 
 ## Verification performed
 
-- SQL inventory: **5/5** application tables have RLS enabled.
+- SQL inventory: **7/7** application tables have RLS enabled.
 - SQL grant inventory: the `anonymous` role has **no SELECT** on those tables; `authenticated` has limited table privileges behind RLS.
 - SQL under `SET LOCAL ROLE authenticated` **without a JWT** returned a NULL identity and **zero** visible communities; the private identity helper completed without an auth schema permission error.
 - GitHub Actions syntax and structure checks passed after the Neon port (see the PR checks).
-- The Data API reports active and the Neon Auth integration reports enabled.
+- The Data API reports active and Neon Auth requires email OTP verification on signup.\n- Vercel hosted static HTML, app.js and styles.css all returned **HTTP 200** from the protected test deployment; the latest source is still in a draft PR. The protection bypass URL is deliberately not stored in GitHub.
 
 **This is not a complete security test.** No independently authenticated two-person browser session has yet tested actual permissions, task writes, invitation flow, or revoked access. An account with no JWT is not a substitute for a forged or cross-tenant request test. Browser SDK import, email delivery, CORS, and Pages hosting are not yet confirmed.
 
 ## Launch gates
 
-1. Review PR #1 and publish the branch using a test host / GitHub Pages after merge.
-2. Verify the pinned CDN-imported browser SDK loads and the public endpoints are reachable over HTTPS.
+1. Review PR #1 and test the existing protected Vercel pilot. GitHub Pages would be a separate later deployment.
+2. Verify the pinned CDN-imported browser SDK actually executes, email OTP arrives and validates, and the public API endpoints work with an authenticated session. HTTP 200 on static assets alone is insufficient.
 3. Run the full [TEST_PLAN.md](TEST_PLAN.md) using two genuine independent test accounts plus an unrelated third account.
 4. Verify per-room authorization and denial attempts directly against the Data API, not only through hidden UI controls.
 5. Set up signup policy, anti-abuse controls, email verification/delivery, backups/recovery, and production CSP. No confidential pastoral/children's data during the pilot.
