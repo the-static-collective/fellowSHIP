@@ -22,6 +22,15 @@
       <p>Independent people. Shared work. One durable place for a church's ideas, projects, tasks, and handoffs.</p>
     </section>
 
+    <section id="pending-invite-panel" class="panel invite-panel" hidden>
+      <h2>A room invitation is waiting</h2>
+      <p id="pending-invite-message" class="muted">Sign in or create an account to accept this private invitation.</p>
+      <div class="inline-form">
+        <button id="accept-room-invite" class="primary" type="button" disabled>Accept invitation</button>
+        <button id="dismiss-room-invite" type="button" class="quiet">Dismiss</button>
+      </div>
+    </section>
+
     <section id="auth-panel" class="panel auth-panel">
       <h2>Enter the Commons</h2>
       <p class="muted">Use an individual church or personal account. Projects are visible only after someone grants you access.</p>
@@ -78,6 +87,12 @@
           <div id="room-detail" hidden>
             <div class="panel-top"><div><div class="eyebrow" id="room-parent">COMMUNITY</div><h3 id="room-title">Room</h3></div><span id="room-role" class="chip">Participant</span></div>
             <p id="room-description" class="muted"></p>
+            <section class="catchup-panel" id="catchup-panel">
+              <div class="panel-top"><h4>Since your last check-in</h4><span class="chip">Catch up</span></div>
+              <p id="catchup-summary" class="muted">Loading your activity recap…</p>
+              <ul id="catchup-list" class="plain-list compact-list"></ul>
+              <button id="mark-caught-up" type="button" class="quiet">Mark caught up</button>
+            </section>
             <div class="section-heading"><h4>Tasks</h4><span id="task-count" class="muted"></span></div>
             <ul id="task-list" class="plain-list task-list"></ul>
             <form id="task-form" class="stack separated">
@@ -87,18 +102,28 @@
             </form>
             <div class="section-heading"><h4>People in this room</h4></div>
             <ul id="members-list" class="plain-list compact-list"></ul>
-            <form id="member-form" class="stack separated" hidden>
-              <p class="muted">Pilot invitations: ask someone to copy their member ID after signing in. Add that ID with the access you intend to grant.</p>
-              <label>Collaborator member ID<input id="invite-user" type="text" placeholder="UUID from their workspace" required></label>
-              <label>Access<select id="invite-role"><option value="viewer">Viewer — read only</option><option value="editor">Editor — add and update tasks</option></select></label>
-              <button type="submit">Grant room access</button>
-            </form>
+            <section id="invite-tools" class="separated" hidden>
+              <h4>Invite someone to this room</h4>
+              <p class="muted small">Issue one private link that expires in 48 hours. Optionally restrict it to the recipient's email. Links are single-use.</p>
+              <form id="invite-form" class="stack">
+                <label>Recipient email (recommended, optional)<input id="invite-email" type="email" autocomplete="off" placeholder="collaborator@example.org"></label>
+                <label>Room access<select id="invite-role"><option value="editor">Editor — can contribute tasks</option><option value="viewer">Viewer — read only</option></select></label>
+                <button class="primary" type="submit">Create private invitation</button>
+              </form>
+              <div id="generated-invite" class="stack invite-generated" hidden>
+                <label>Copy this one-time link<input id="invite-link" type="text" readonly></label>
+                <button id="copy-invite-link" type="button">Copy invitation link</button>
+                <p class="muted small">Send privately. Anyone holding an unrestricted link can redeem it before it expires.</p>
+              </div>
+              <div class="section-heading"><h4>Recent invitations</h4></div>
+              <ul id="invite-list" class="plain-list compact-list"></ul>
+            </section>
             <div class="section-heading"><h4>Activity history</h4><span class="muted">Recorded by the database</span></div>
             <ul id="activity-list" class="plain-list activity-list"></ul>
           </div>
         </section>
       </div>
-      <p class="footer-note">fellowSHIP Commons 001 · Independent accounts · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
+      <p class="footer-note">fellowSHIP Commons 002 · Independent accounts · No AI assistant required · <a href="https://github.com/the-static-collective/fellowSHIP" target="_blank" rel="noreferrer">Source and vision</a></p>
     </section>
   </main>
 </body>
