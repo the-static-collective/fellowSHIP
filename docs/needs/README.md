@@ -17,17 +17,31 @@ This record reflects the organizer's declared need and the approved public event
 
 ## Smallest real chord to investigate
 
-1. **Host steward:** A person authorized by Riverside and FELLOWSHIP to determine whether the church can offer this service, where, when, and under what policy.
-2. **Caregiver lead and coverage:** Caregivers with appropriate experience, safeguarding clearance under the host's policy, and explicitly accepted duties; an appropriate two-adult practice and age-dependent staffing.
-3. **Suitable space and plan:** Host-approved room, bathroom and accessibility arrangements, safe check-in/release arrangements, first aid and emergency response, parent communication and a backup plan.
-4. **Actual families:** A private, host-managed way to ask whether care is needed and for what ages/hours, without publishing any child data.
-5. **Regulatory determination:** The actual operator needs to establish what Minnesota licensing exclusions or requirements apply, considering **duration, age, setting and whether guardians remain onsite**; this repository cannot certify exemptions.
+1. **External staffing (first missing capacity):** No internal childcare person has been identified, and the organizer expects the team may have none. Find an independent adult caregiver team or event childcare provider first. A search result is not availability.
+2. **Host decision (parallel requirement):** An authorized Riverside representative—not necessarily a children's ministry leader—must approve whether care may take place, who is responsible, where, and under which safeguards.
+3. **Caregiver commitment:** Actual suitable caregivers must accept the defined shift and pass host-required screening, with age-appropriate staffing and a two-adult practice where appropriate.
+4. **Suitable space and plan:** Host-approved room, bathroom and accessibility arrangements, safe check-in/release arrangements, first aid and emergency response, parent communication and a backup plan.
+5. **Actual families:** A private, host-managed way to ask whether care is needed and for what ages/hours, without publishing any child data.
+6. **Regulatory determination:** The actual operator needs to establish what Minnesota licensing exclusions or requirements apply, considering **duration, age, setting and whether guardians remain onsite**; this repository cannot certify exemptions.
 
-**What can be publicly requested now:** an introduction to the authorized host childcare coordinator, and expressions of interest from adults willing to undergo the host's screening and training. **What cannot be claimed:** an approved nursery, screened volunteers, childcare places, booked children or safe coverage.
+**What can be publicly requested now:** information on adult caregivers and event-childcare vendors who might be willing to serve this particular event, plus simple approval from an authorized Riverside host to explore using a suitable space. The church is not assumed to have a children's-ministry coordinator or nursery team. **What cannot be claimed:** an approved nursery, screened volunteers, childcare places, booked children or safe coverage.
+
+## Real provider discovery — researched leads, not commitments
+
+These are external leads identified on November 21, 2026. **Nobody has been contacted, booked, approved, or confirmed for FELLOWSHIP childcare through this update.**
+
+| Potential outside source | Grounded relevance | Next question |
+| --- | --- | --- |
+| [SitterTree — Minneapolis church childcare](https://www.sittertree.com/church-child-care/mn/minneapolis) | Marketplace specializes in church nursery/event sitters. Its public Minneapolis listing showed multiple sitter profiles and an average rate of $20.50/hour as of October 21. Provider details, service fees, actual availability, and host requirements still need checking. | Does a provider or team have December 4 evening availability, and what would the minimum real cost be? |
+| [Jovie of Edina — special event staffing](https://www.jovie.com/locations/mn/edina/jovie-of-edina/reunion-special-event-childcare/) | Official event staffing service covers Minneapolis and says employees receive checks and interviews. Its event intake recommends staffing by age, attendance, duration, and location. | Could they provide a suitably staffed package, donated or discounted for a free community event? |
+| [Lake Nokomis Lutheran](https://www.lakenokomischurch.org/worship.html) | Nearby congregation publicly describes childcare upon request; this does not mean it can supply other churches. | Might they know an approved adult caregiver or give advice on temporary event-care logistics? |
+| [Trinity Lutheran of Minnehaha Falls](https://www.trinityfalls.org/visit) | Nearby church advertises its own nursery during worship. This does not establish external staff availability. | Might they suggest responsible referral contacts or a staffing process? |
+
+**Low-cost route:** seek a host-approved independent adult team and donated or sponsored supervision; compare with a paid screened-provider quote so the cost and safety requirements stay visible. Do not represent unverified church contacts as offers or solicit child data through public GitHub.
 
 ## Minimum host decision sequence
 
-- **Ask before recruiting:** Do Riverside's pastor, administrators, and insurance/safeguarding decision-makers allow a childcare program for this event at all?
+- **Find staff while asking the host:** Query actual external childcare staffing sources and an authorized Riverside decision-maker in parallel. Neither external interest nor host approval alone is enough to launch a care program.
 - **Define the service:** Is this a brief supervised activity for onsite parents, or a distinct care service? Set exact hours and operational responsibility before advertising it.
 - **Check legal conditions:** [Minnesota Statutes §142B.05](https://www.revisor.mn.gov/statutes/cite/142B.05), including the under-three-hours/same-or-contiguous-building exclusion, and current [DCYF licensing guidance](https://dcyf.mn.gov/partners-and-providers/licensing/child-care-centers/apply-child-care-center-license). Religious-worship exceptions should not be assumed to cover an open-mic night.
 - **Apply safeguarding policy:** The [Minnesota Annual Conference UMC guidance](https://www.minnesotaumc.org/files/content/bestpractices_v2.pdf) is one example recommending background checks and a two-adult rule. Actual requirements and responsibilities must be confirmed by the host.
@@ -38,7 +52,7 @@ Do not treat a two-person match, a model inference, a JSON receipt, or someone's
 
 ## Next concrete action
 
-Ask Paula and the authorized Riverside host: **Who is responsible for children's ministry/safeguarding, and could they approve a supervised childcare option for part of the December 4 event?** If yes, the church should privately determine demand and operational feasibility.
+**First find a willing, qualified external caregiver or team.** At the same time, ask Paula and an authorized Riverside event decision-maker **whether the church can host and approve a safely supervised children's space**. Avoid assuming any internal childcare leader exists. If the host agrees to explore it, the church can privately determine demand and feasibility, screen and approve any outside provider, and establish actual shifts.
 
 When actual availability is confirmed by the authorized host, record only a minimal **public status update** here with an attributable source and no personal details. Operational caregiver and child data belongs exclusively in the host's private process. A decision to open or cancel care is the host's, never nuThang's.
 
