@@ -10,7 +10,7 @@
 2. A creates the task "Confirm kitchen" and sets it to **In progress**. Activity should show `task_created` followed by `task_updated`, actor A, and timestamps.
 3. B signs in with another account, copies their full Member ID, and shares it privately with A.
 4. A adds B as **viewer** to Friday Supper. On refresh, B sees the room, tasks, people, and activity but has no task-entry form and cannot change task status.
-5. A changes B's role to **editor** (currently through the SQL editor or another authorized API client; a role-editing UI is a follow-up). B refreshes and can create/update tasks.
+5. A changes B's role to **editor** using the room's people controls. B refreshes and can create/update tasks.
 6. A and B open the room from separate browsers; B changes a task and A refreshes to see the change and event.
 7. A creates a second room **Leadership Notes** and does **not** invite B. B must not see it.
 8. C signs in independently. C must see neither Church A nor either room before being invited.
