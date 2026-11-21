@@ -29,6 +29,8 @@ jobs:
           html = Path('index.html').read_text()
           js = Path('app.js').read_text()
           sql = Path('db/neon-schema.sql').read_text().lower()
+          invites = Path('db/002_room_invites.sql').read_text().lower()
+          checkins = Path('db/003_room_checkins.sql').read_text().lower()
           p = IDs()
           p.feed(html)
           assert len(p.ids) == len(set(p.ids)), 'Duplicate element ID'
@@ -37,7 +39,13 @@ jobs:
           assert not missing, f'JS references missing HTML IDs: {missing}'
           for table in ['communities', 'rooms', 'room_members', 'tasks', 'activity']:
               assert f'alter table public.{table} enable row level security;' in sql
+          assert 'alter table public.room_invites enable row level security;' in invites
+          assert 'alter table public.room_checkins enable row level security;' in checkins
+          assert 'revoke all on public.room_invites from public, anonymous, authenticated' in invites
+          assert 'create function public.redeem_room_invite' in invites
+          assert 'public.digest(p_token' in invites and 'public.gen_random_bytes(32)' in invites
+          assert 'private.room_can_read(room_id)' in checkins
           assert 'NEON_AUTH_URL' in js and 'NEON_DATA_URL' in js, 'Neon endpoints missing'
           assert 'neon_auth' in sql, 'Expected Neon identity schema'
-          print(f'Checked {len(referenced)} JS element references and five RLS tables.')
+          print(f'Checked {len(referenced)} JS element references and seven RLS tables.')
           PY
