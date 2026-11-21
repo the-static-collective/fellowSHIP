@@ -63,6 +63,38 @@ function addText(parent, tag, text, className = "") {
 function dateText(value) {
   return value ? new Date(value).toLocaleString() : "";
 }
+
+function clearGeneratedInvite() {
+  $("invite-link").value = "";
+  $("generated-invite").hidden = true;
+  $("invite-email-options").hidden = true;
+  $("open-gmail-invite").removeAttribute("href");
+  $("open-mailto-invite").removeAttribute("href");
+  $("invite-feedback").hidden = true;
+}
+
+function invitationEmailDraft(email, room, url) {
+  // Only generate outbound links with encoded recipient, subject and body.
+  const subject = "Invitation to " + room + " on fellowSHIP";
+  const body = [
+    "You've been invited to work on " + room + " at fellowSHIP.",
+    "",
+    "Open this private invitation to join the room:",
+    url,
+    "",
+    "Sign in or create an account and verify your email address.",
+    "This invitation can only be used once and expires in 48 hours.",
+    "",
+    "fellowSHIP — make something good, together."
+  ].join("\n");
+  const params = new URLSearchParams({ view: "cm", fs: "1", to: email, su: subject, body });
+  return {
+    gmail: "https://mail.google.com/mail/?" + params.toString(),
+    mailto: "mailto:" + encodeURIComponent(email) +
+      "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body)
+  };
+}
+
 function owns(room) { return user && room.created_by === user.id; }
 
 async function connect() {
@@ -104,8 +136,7 @@ async function refreshWorkspace() {
   rooms = roomResponse.data || [];
   if (!rooms.some((r) => r.id === currentRoom)) {
     currentRoom = rooms[0]?.id || null;
-    $("invite-link").value = "";
-    $("generated-invite").hidden = true;
+    clearGeneratedInvite();
   }
   drawCommunities();
   drawRooms();
@@ -150,8 +181,7 @@ function drawRooms() {
     addText(button, "span", community?.name || "Shared community", "muted small");
     button.addEventListener("click", () => action(async () => {
       if (room.id !== currentRoom) {
-        $("invite-link").value = "";
-        $("generated-invite").hidden = true;
+        clearGeneratedInvite();
       }
       currentRoom = room.id;
       drawRooms();
@@ -442,22 +472,59 @@ function bindForms() {
       notice("Task added");
     });
   });
-  $("invite-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    action(async () => {
-      if (!currentRoom) throw new Error("Choose a room first.");
+  async function createRoomInvitation(linkOnly = false) {
+    const button = linkOnly ? $("create-link-only") : $("prepare-email-invite");
+    const feedback = $("invite-feedback");
+    const email = cleanInput("invite-email").toLowerCase();
+    const room = rooms.find((r) => r.id === currentRoom);
+    feedback.hidden = false;
+    feedback.dataset.error = "false";
+    feedback.textContent = linkOnly ? "Generating your private link…" : "Preparing the email invitation…";
+    button.disabled = true;
+    try {
+      if (!room || !owns(room)) throw new Error("Select a room you own first.");
+      if (!linkOnly && !email) throw new Error("Enter a recipient email, or choose Create link instead.");
       const { data, error } = await db.rpc("issue_room_invite", {
-        p_room: currentRoom,
+        p_room: room.id,
         p_role: $("invite-role").value,
-        p_target_email: cleanInput("invite-email") || null
+        p_target_email: email || null
       });
       if (error) throw error;
-      if (!/^[0-9a-f]{64}$/.test(data || "")) throw new Error("The server did not return a valid invite.");
-      $("invite-link").value = window.location.origin + window.location.pathname + "#invite=" + data;
+      if (!/^[0-9a-f]{64}$/.test(data || "")) throw new Error("The server did not return a valid invitation.");
+      const link = window.location.origin + window.location.pathname + "#invite=" + data;
+      $("invite-link").value = link;
       $("generated-invite").hidden = false;
+      $("invite-email-options").hidden = linkOnly || !email;
+      if (email && !linkOnly) {
+        const drafts = invitationEmailDraft(email, room.name, link);
+        $("open-gmail-invite").href = drafts.gmail;
+        $("open-mailto-invite").href = drafts.mailto;
+        $("invite-created-message").textContent =
+          "Ready for " + email + ". Open a preaddressed draft and press Send.";
+        feedback.textContent = "Private invitation created. Choose Open Gmail draft or Open email app below.";
+      } else {
+        $("open-gmail-invite").removeAttribute("href");
+        $("open-mailto-invite").removeAttribute("href");
+        $("invite-created-message").textContent = "Private link ready. Copy or share it with the intended person.";
+        feedback.textContent = "Private invitation link created.";
+      }
       await loadRoom();
-      notice("Invitation created · copy and send privately");
-    });
+      notice("Invitation ready · " + (linkOnly ? "copy the link" : "open a preaddressed email draft"));
+    } catch(error) {
+      console.error("Invitation creation failed", error);
+      feedback.dataset.error = "true";
+      feedback.textContent = "Invitation not created: " + errorMessage(error);
+      notice("Invitation could not be created. See the message below the form.", true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+  $("invite-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    void createRoomInvitation(false);
+  });
+  $("create-link-only").addEventListener("click", () => {
+    void createRoomInvitation(true);
   });
   $("copy-invite-link").addEventListener("click", () => action(async () => {
     await navigator.clipboard.writeText($("invite-link").value);
@@ -500,8 +567,7 @@ function bindForms() {
     communities = [];
     rooms = [];
     currentRoom = null;
-    $("invite-link").value = "";
-    $("generated-invite").hidden = true;
+    clearGeneratedInvite();
     displaySession();
     notice("Signed out");
   }));
