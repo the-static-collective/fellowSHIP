@@ -8,6 +8,14 @@ grant usage on schema public to authenticated;
 revoke all on schema private from public;
 grant usage on schema private to authenticated;
 
+-- Neon owns the managed auth schema. Do not grant its schema to app roles.
+-- A narrow definer wrapper exposes only the *current verified JWT subject*.
+create function private.current_uid()
+returns uuid language sql stable security definer set search_path = ''
+as $ select auth.uid(); $;
+revoke all on function private.current_uid() from public;
+grant execute on function private.current_uid() to authenticated;
+
 create table public.communities (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(btrim(name)) between 2 and 100),
@@ -59,19 +67,19 @@ create index tasks_room on public.tasks(room_id, created_at desc);
 create index activity_room on public.activity(room_id, occurred_at desc);
 
 -- These narrow SECURITY DEFINER *read helpers* avoid circular RLS policies.
--- Neon Data API provides auth.uid() for UUID sub claims.
--- The caller is still identified with auth.uid(); helpers are in an
+-- The private helper wraps Neon Data API's auth.uid() for restricted roles.
+-- The caller is still identified with private.current_uid(); helpers are in an
 -- unexposed schema with fixed search_path. Never accept arbitrary user IDs.
 create function private.room_can_read(p_room uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
-  select (select auth.uid()) is not null and (
+  select (select private.current_uid()) is not null and (
     exists (
       select 1 from public.rooms r
-      where r.id = p_room and r.created_by = (select auth.uid())
+      where r.id = p_room and r.created_by = (select private.current_uid())
     ) or exists (
       select 1 from public.room_members m
-      where m.room_id = p_room and m.user_id = (select auth.uid())
+      where m.room_id = p_room and m.user_id = (select private.current_uid())
     )
   );
 $$;
@@ -79,9 +87,9 @@ $$;
 create function private.room_is_owner(p_room uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
-  select (select auth.uid()) is not null and exists (
+  select (select private.current_uid()) is not null and exists (
     select 1 from public.rooms r
-    where r.id = p_room and r.created_by = (select auth.uid())
+    where r.id = p_room and r.created_by = (select private.current_uid())
   );
 $$;
 
@@ -91,7 +99,7 @@ as $$
   select private.room_is_owner(p_room) or exists (
     select 1 from public.room_members m
     where m.room_id = p_room
-      and m.user_id = (select auth.uid())
+      and m.user_id = (select private.current_uid())
       and m.role = 'editor'
   );
 $$;
@@ -99,16 +107,16 @@ $$;
 create function private.community_can_read(p_community uuid)
 returns boolean language sql stable security definer set search_path = ''
 as $$
-  select (select auth.uid()) is not null and (
+  select (select private.current_uid()) is not null and (
     exists (
       select 1 from public.communities c
-      where c.id = p_community and c.created_by = (select auth.uid())
+      where c.id = p_community and c.created_by = (select private.current_uid())
     ) or exists (
       select 1 from public.rooms r
       where r.community_id = p_community and (
-        r.created_by = (select auth.uid()) or exists (
+        r.created_by = (select private.current_uid()) or exists (
           select 1 from public.room_members m
-          where m.room_id = r.id and m.user_id = (select auth.uid())
+          where m.room_id = r.id and m.user_id = (select private.current_uid())
         )
       )
     )
@@ -136,7 +144,7 @@ using (private.community_can_read(id));
 
 create policy "authenticated people may found a community"
 on public.communities for insert to authenticated
-with check (created_by = (select auth.uid()));
+with check (created_by = (select private.current_uid()));
 
 create policy "room visible to its participants"
 on public.rooms for select to authenticated
@@ -145,10 +153,10 @@ using (private.room_can_read(id));
 create policy "community founder creates its rooms"
 on public.rooms for insert to authenticated
 with check (
-  created_by = (select auth.uid())
+  created_by = (select private.current_uid())
   and exists (
     select 1 from public.communities c
-    where c.id = community_id and c.created_by = (select auth.uid())
+    where c.id = community_id and c.created_by = (select private.current_uid())
   )
 );
 
@@ -160,7 +168,7 @@ create policy "only room owner adds collaborators"
 on public.room_members for insert to authenticated
 with check (
   private.room_is_owner(room_id)
-  and user_id <> (select auth.uid())
+  and user_id <> (select private.current_uid())
 );
 
 create policy "only room owner changes collaborators"
@@ -170,7 +178,7 @@ with check (private.room_is_owner(room_id));
 
 create policy "owner can revoke and member can leave"
 on public.room_members for delete to authenticated
-using (private.room_is_owner(room_id) or user_id = (select auth.uid()));
+using (private.room_is_owner(room_id) or user_id = (select private.current_uid()));
 
 create policy "room participants read tasks"
 on public.tasks for select to authenticated
@@ -179,7 +187,7 @@ using (private.room_can_read(room_id));
 create policy "room editors create tasks"
 on public.tasks for insert to authenticated
 with check (
-  created_by = (select auth.uid())
+  created_by = (select private.current_uid())
   and private.room_can_edit(room_id)
 );
 
@@ -213,7 +221,7 @@ begin
   if tg_op = 'INSERT' then
     insert into public.activity(room_id, task_id, actor_id, action, details)
     values (
-      new.room_id, new.id, (select auth.uid()),
+      new.room_id, new.id, (select private.current_uid()),
       'task_created', jsonb_build_object('title', new.title, 'status', new.status)
     );
   elsif new.title is distinct from old.title
@@ -221,7 +229,7 @@ begin
      or new.status is distinct from old.status then
     insert into public.activity(room_id, task_id, actor_id, action, details)
     values (
-      new.room_id, new.id, (select auth.uid()),
+      new.room_id, new.id, (select private.current_uid()),
       'task_updated', jsonb_build_object(
         'title', new.title, 'previous_status', old.status, 'status', new.status
       )
